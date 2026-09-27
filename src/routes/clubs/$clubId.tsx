@@ -49,7 +49,7 @@ function ClubPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
         </div>
 
-        <div className="-mt-10 space-y-4 px-5">
+        <div className="relative z-10 -mt-10 space-y-4 px-5">
           <span
             className={`grid h-14 w-14 place-items-center rounded-2xl text-lg font-bold ${
               club.accent === "gold" ? "bg-gold text-background" : "bg-primary text-primary-foreground"

@@ -47,7 +47,7 @@ function Home() {
             alt=""
             width={816}
             height={816}
-            className="h-28 w-28 shrink-0 opacity-90 mix-blend-screen sm:h-36 sm:w-36"
+            className="h-32 w-32 shrink-0 scale-125 mix-blend-screen sm:h-40 sm:w-40"
           />
         </section>
 
