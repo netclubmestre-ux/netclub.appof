@@ -79,7 +79,7 @@ function Profile() {
 
         <section>
           <SectionHeader title="Seus posts" />
-          <PostCard post={posts[0]} />
+          <PostCard post={posts[0]!} />
         </section>
       </div>
     </AppShell>
