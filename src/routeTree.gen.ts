@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as NetworkRouteImport } from './routes/network'
+import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ChatIndexRouteImport } from './routes/chat/index'
+import { Route as ChatPersonIdRouteImport } from './routes/chat/$personId'
 import { Route as ClubsIndexRouteImport } from './routes/clubs/index'
 import { Route as ClubsClubIdRouteImport } from './routes/clubs/$clubId'
 
@@ -22,6 +26,26 @@ const IndexRoute = IndexRouteImport.update({
 const NetworkRoute = NetworkRouteImport.update({
   id: '/network',
   path: '/network',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatIndexRoute = ChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatPersonIdRoute = ChatPersonIdRouteImport.update({
+  id: '/chat/$personId',
+  path: '/chat/$personId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ClubsIndexRoute = ClubsIndexRouteImport.update({
@@ -38,34 +62,75 @@ const ClubsClubIdRoute = ClubsClubIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/network': typeof NetworkRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/chat/$personId': typeof ChatPersonIdRoute
   '/clubs/$clubId': typeof ClubsClubIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/clubs/': typeof ClubsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/network': typeof NetworkRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/chat/$personId': typeof ChatPersonIdRoute
   '/clubs/$clubId': typeof ClubsClubIdRoute
+  '/chat': typeof ChatIndexRoute
   '/clubs': typeof ClubsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/network': typeof NetworkRoute
+  '/notifications': typeof NotificationsRoute
+  '/profile': typeof ProfileRoute
+  '/chat/$personId': typeof ChatPersonIdRoute
   '/clubs/$clubId': typeof ClubsClubIdRoute
+  '/chat/': typeof ChatIndexRoute
   '/clubs/': typeof ClubsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/network' | '/clubs/$clubId' | '/clubs/'
+  fullPaths:
+    | '/'
+    | '/network'
+    | '/notifications'
+    | '/profile'
+    | '/chat/$personId'
+    | '/clubs/$clubId'
+    | '/chat/'
+    | '/clubs/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/network' | '/clubs/$clubId' | '/clubs'
-  id: '__root__' | '/' | '/network' | '/clubs/$clubId' | '/clubs/'
+  to:
+    | '/'
+    | '/network'
+    | '/notifications'
+    | '/profile'
+    | '/chat/$personId'
+    | '/clubs/$clubId'
+    | '/chat'
+    | '/clubs'
+  id:
+    | '__root__'
+    | '/'
+    | '/network'
+    | '/notifications'
+    | '/profile'
+    | '/chat/$personId'
+    | '/clubs/$clubId'
+    | '/chat/'
+    | '/clubs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   NetworkRoute: typeof NetworkRoute
+  NotificationsRoute: typeof NotificationsRoute
+  ProfileRoute: typeof ProfileRoute
+  ChatPersonIdRoute: typeof ChatPersonIdRoute
   ClubsClubIdRoute: typeof ClubsClubIdRoute
+  ChatIndexRoute: typeof ChatIndexRoute
   ClubsIndexRoute: typeof ClubsIndexRoute
 }
 
@@ -83,6 +148,34 @@ declare module '@tanstack/react-router' {
       path: '/network'
       fullPath: '/network'
       preLoaderRoute: typeof NetworkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/': {
+      id: '/chat/'
+      path: '/chat'
+      fullPath: '/chat/'
+      preLoaderRoute: typeof ChatIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$personId': {
+      id: '/chat/$personId'
+      path: '/chat/$personId'
+      fullPath: '/chat/$personId'
+      preLoaderRoute: typeof ChatPersonIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/clubs/': {
@@ -105,7 +198,11 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   NetworkRoute: NetworkRoute,
+  NotificationsRoute: NotificationsRoute,
+  ProfileRoute: ProfileRoute,
+  ChatPersonIdRoute: ChatPersonIdRoute,
   ClubsClubIdRoute: ClubsClubIdRoute,
+  ChatIndexRoute: ChatIndexRoute,
   ClubsIndexRoute: ClubsIndexRoute,
 }
 export const routeTree = rootRouteImport
