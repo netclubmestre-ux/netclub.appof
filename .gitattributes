@@ -1,0 +1,10 @@
+# Normaliza finais de linha para LF em todos os sistemas.
+# Sem isso, um checkout no Windows (core.autocrlf=true) quebra o Prettier/ESLint.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.woff binary
+*.woff2 binary
