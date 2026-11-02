@@ -1,7 +1,12 @@
-export function Logo({ className = "text-2xl" }: { className?: string }) {
+import logoUrl from "@/assets/netclub-wordmark.png";
+
+export function Logo({ className = "h-7" }: { className?: string }) {
   return (
-    <span className={`font-display font-bold tracking-tight ${className}`}>
-      Net<span className="text-primary">C</span>lub<span className="text-gold">.</span>
-    </span>
+    <img
+      src={logoUrl}
+      alt="NetClub"
+      draggable={false}
+      className={`w-auto shrink-0 select-none ${className}`}
+    />
   );
 }

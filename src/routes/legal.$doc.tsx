@@ -48,7 +48,7 @@ function LegalPage() {
     <div className="mx-auto max-w-3xl px-5 py-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <Link to="/">
-          <Logo className="text-xl" />
+          <Logo className="h-6" />
         </Link>
         <Link
           to="/home"

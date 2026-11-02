@@ -96,7 +96,7 @@ function ResetPasswordPage() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="surface w-full max-w-sm p-7 fade-up">
         <Link to="/">
-          <Logo className="text-2xl" />
+          <Logo className="h-8" />
         </Link>
 
         {recovery ? (

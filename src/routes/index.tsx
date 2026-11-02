@@ -45,7 +45,7 @@ function Landing() {
   return (
     <div className="mx-auto flex min-h-screen max-w-5xl flex-col px-5 sm:px-6">
       <header className="flex items-center justify-between gap-3 py-5">
-        <Logo />
+        <Logo className="h-8" />
         <div className="flex items-center gap-2">
           <div className="hidden w-36 sm:block">
             <LanguageSelect className="h-8 w-full text-xs" />

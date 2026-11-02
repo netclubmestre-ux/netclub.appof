@@ -128,7 +128,7 @@ export function AppShell() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b bg-background/90 px-3 py-2.5 backdrop-blur md:px-6">
           <Link to="/home" className="shrink-0 md:hidden">
-            <Logo className="text-xl" />
+            <Logo className="h-6" />
           </Link>
           <Link
             to="/search"

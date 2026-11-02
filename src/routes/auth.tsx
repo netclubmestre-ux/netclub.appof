@@ -122,7 +122,7 @@ function AuthPage() {
       <div className="w-full max-w-md space-y-4">
         <div className="flex items-center justify-between">
           <Link to="/">
-            <Logo className="text-2xl" />
+            <Logo className="h-8" />
           </Link>
           <div className="w-36">
             <LanguageSelect className="h-8 w-full text-xs" />
