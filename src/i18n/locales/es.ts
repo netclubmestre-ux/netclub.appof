@@ -33,6 +33,7 @@ export const es = {
   "common.success": "¡Hecho!",
   "common.all": "Todos",
   "common.filters": "Filtros",
+  "common.moreOptions": "Más opciones",
   "common.clear": "Limpiar",
   "common.results": "resultados",
   "common.noResults": "No se encontraron resultados.",
@@ -112,10 +113,10 @@ export const es = {
   "auth.or": "o",
   "auth.demoTitle": "Acceso de demostración",
   "auth.demoBody":
-    "La autenticación real se habilitará cuando el Supabase de la app esté configurado. Por ahora, usa una sesión local de demostración.",
+    "El modo demostración está activo (VITE_DATA_SOURCE=demo). La autenticación real usa el Supabase exclusivo de netclub.app; para probarla, define VITE_DATA_SOURCE=supabase en .env.",
   "auth.demoSignIn": "Entrar en la demostración",
   "auth.demoSignUp": "Crear cuenta de demostración",
-  "auth.demoNote": "No se envía ningún correo y no se almacena ninguna contraseña.",
+  "auth.demoNote": "No se envía ningún correo y no se almacena ninguna contraseña en este modo.",
   "auth.emailConfirm": "Cuenta creada. Confirma tu correo para entrar.",
   "auth.termsNotice":
     "Al continuar, declaras haber leído los Términos de Uso y la Política de Privacidad.",
@@ -125,6 +126,25 @@ export const es = {
   "auth.backendRequired": "La recuperación por correo requiere el backend configurado.",
   "auth.checkEmail": "Si el correo existe, enviaremos un enlace de recuperación.",
   "auth.googleUnavailable": "El acceso con Google se habilitará con el backend.",
+  "auth.emailInUse": "Este correo ya tiene una cuenta. Entra o recupera la contraseña.",
+  "auth.rateLimit": "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+  "auth.confirmEmailTitle": "Confirma tu correo",
+  "auth.confirmEmailBody":
+    "Enviamos un enlace de confirmación a {email}. Después de confirmar, vuelve e inicia sesión.",
+  "auth.backendNote":
+    "Tus datos se guardan en el backend de NetClub y están protegidos por RLS (Row Level Security).",
+  "auth.sendResetLink": "Enviar enlace de recuperación",
+  "auth.resetSent": "Enlace enviado.",
+  "auth.passwordUpdated": "Contraseña actualizada. Ya tienes sesión iniciada.",
+  "auth.mismatch": "Las contraseñas no coinciden.",
+  "auth.recoveryTitle": "Define tu nueva contraseña",
+  "auth.recoveryBody":
+    "Abriste un enlace de recuperación. Elige una nueva contraseña para continuar.",
+  "auth.uploading": "Subiendo...",
+  "auth.demoUnavailable": "Disponible solo con el backend configurado (VITE_DATA_SOURCE=supabase).",
+  "auth.checkEmailTitle": "Revisa tu correo",
+  "auth.checkEmailBody":
+    "Si {email} tiene una cuenta, el enlace de recuperación llegará en breve. Revisa también el spam.",
 
   "onboarding.title": "Completa tu perfil profesional",
   "onboarding.subtitle": "Esta información alimenta tus recomendaciones y NetMach.",
@@ -161,7 +181,7 @@ export const es = {
   "onboarding.completeBody": "Ahora puedes explorar NetMach, los grupos y el feed.",
   "onboarding.goHome": "Ir al inicio",
   "onboarding.uploadNote":
-    "La imagen permanece solo en esta sesión hasta que se configure el almacenamiento del backend.",
+    "JPG, PNG o WebP hasta 5 MB. La imagen se sube al almacenamiento de la app.",
   "onboarding.usernameTaken": "Este nombre de usuario ya está en uso.",
 
   "experience.beginner": "Principiante",
@@ -210,7 +230,7 @@ export const es = {
   "home.groups": "Grupos para ti",
   "home.stories": "Stories",
   "home.addStory": "Crear story",
-  "home.yourStory": "Tu story",
+  "home.yourStory": "Añadir story",
   "home.recommended": "Recomendado",
   "home.connect": "Conectar",
   "home.connected": "Conectado",
@@ -218,6 +238,7 @@ export const es = {
   "home.accept": "Aceptar",
   "home.decline": "Rechazar",
   "home.emptyFeed": "Aún no hay publicaciones. Empieza la conversación.",
+  "home.emptyFeedBody": "Publica algo o conéctate con profesionales para ver contenido aquí.",
   "home.emptyPeople": "No hay sugerencias por ahora.",
   "home.onboardingTitle": "Completa tu onboarding",
   "home.onboardingBody": "Añade competencias y objetivos para mejores recomendaciones.",
@@ -248,7 +269,7 @@ export const es = {
   "stories.by": "Story de {name}",
   "stories.expired": "Este story expiró.",
   "stories.uploadNote":
-    "La imagen se muestra solo en esta sesión. La subida real se habilitará con el almacenamiento del backend.",
+    "JPG, PNG o WebP hasta 5 MB. La imagen se sube al almacenamiento de la app.",
   "stories.yours": "Tu story",
   "stories.viewers": "Visualizaciones",
   "stories.deleted": "Story eliminado.",
@@ -400,6 +421,7 @@ export const es = {
 
   "notifications.title": "Notificaciones",
   "notifications.markAllRead": "Marcar todas como leídas",
+  "notifications.markAllReadNone": "No hay notificaciones sin leer.",
   "notifications.empty": "Aún no hay notificaciones.",
   "notifications.like": "le gustó tu publicación",
   "notifications.comment": "comentó en tu publicación",
@@ -530,7 +552,8 @@ export const es = {
     "La eliminación borra perfil, publicaciones, mensajes y archivos. El proceso definitivo depende del backend.",
   "settings.deleteAccountConfirm": "Escribe ELIMINAR para confirmar la solicitud.",
   "settings.requestDeletion": "Solicitar eliminación",
-  "settings.deletionRequested": "Solicitud registrada localmente (demostración).",
+  "settings.deletionRequested":
+    "Solicitud registrada. La eliminación se procesará según la política de privacidad.",
   "settings.deletionPending": "Solicitud pendiente desde {date}.",
   "settings.terms": "Términos de Uso",
   "settings.privacyPolicy": "Política de Privacidad",
@@ -545,6 +568,9 @@ export const es = {
   "settings.dataMode": "Fuente de datos",
   "settings.dataModeDemo": "Demostración local",
   "settings.dataModeSupabase": "Supabase",
+  "settings.dataModeNote": "Los datos se guardan en Supabase con Row Level Security (RLS).",
+  "settings.emailBackendNote":
+    "El envío de correos depende del proveedor configurado en el backend.",
   "settings.notAccepted": "No aceptado",
   "settings.moderation": "Moderación de denuncias",
   "settings.moderationHint":
@@ -620,4 +646,8 @@ export const es = {
   "errors.blocked": "Acción no permitida con este usuario.",
   "errors.notConnected": "Debes estar conectado para esta acción.",
   "errors.selfAction": "No puedes realizar esta acción contigo mismo.",
+  "errors.upload": "No fue posible subir la imagen.",
+  "errors.network": "Fallo de conexión. Revisa tu internet e inténtalo de nuevo.",
+  "errors.fileTooLarge": "La imagen debe tener hasta 5 MB.",
+  "errors.invalidFileType": "Formato inválido. Usa JPG, PNG o WebP.",
 } satisfies Record<TranslationKey, string>;

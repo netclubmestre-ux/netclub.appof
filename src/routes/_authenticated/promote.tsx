@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
 import { feedQuery, meQuery, promotionsQuery, storiesQuery } from "@/data/queries";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import type { PromotionStatus, PromotionTarget } from "@/data/types";
 import { PageHeader } from "@/components/netclub/PageHeader";
 import { EmptyState } from "@/components/netclub/EmptyState";

@@ -136,7 +136,7 @@ export function PostCard({
         <DropdownMenu>
           <DropdownMenuTrigger
             className="rounded-full p-1 text-muted-foreground hover:text-foreground"
-            aria-label={t("common.filters")}
+            aria-label={t("common.moreOptions")}
           >
             <MoreHorizontal className="h-5 w-5" />
           </DropdownMenuTrigger>

@@ -3,7 +3,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { Check, Crown, Lock, Sparkles, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
-import { useRepository } from "@/data/provider";
+import { useDataMode, useRepository } from "@/data/provider";
 import { meQuery, savedSearchesQuery, subscriptionQuery } from "@/data/queries";
 import { PageHeader } from "@/components/netclub/PageHeader";
 import { Tag } from "@/components/netclub/Tag";
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/_authenticated/premium")({
 function PremiumPage() {
   const { t, formatDate } = useI18n();
   const repository = useRepository();
+  const { isDemo } = useDataMode();
   const queryClient = useQueryClient();
   const { data: me } = useSuspenseQuery(meQuery);
   const { data: subscription } = useSuspenseQuery(subscriptionQuery);
@@ -247,10 +248,12 @@ function PremiumPage() {
         </Button>
       </section>
 
-      <p className="mt-6 flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
-        <X className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        {t("common.demoNotice")}
-      </p>
+      {isDemo && (
+        <p className="mt-6 flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground">
+          <X className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+          {t("common.demoNotice")}
+        </p>
+      )}
     </div>
   );
 }

@@ -6,14 +6,18 @@
  * A UI é avisada por `isDemo` e exibe o selo "Modo demonstração".
  */
 import { createDemoDb } from "./dev-data";
-import type {
-  NetclubRepository,
-  OnboardingInput,
-  ProfileUpdateInput,
-  PromotionInput,
-  ReportInput,
-  SavedSearchInput,
-  MatchState,
+import {
+  RepositoryError,
+  type MatchState,
+  type NetclubRepository,
+  type OnboardingInput,
+  type ProfileUpdateInput,
+  type PromotionInput,
+  type ReportInput,
+  type SavedSearchInput,
+  type SignUpInput,
+  type SignUpResult,
+  type UploadKind,
 } from "./repository";
 import {
   FREE_NETMACH_DAILY_LIMIT,
@@ -44,30 +48,8 @@ import {
   type UserSettings,
 } from "./types";
 
-export type RepositoryErrorCode =
-  | "NOT_AUTHENTICATED"
-  | "PREMIUM_REQUIRED"
-  | "PAYMENTS_UNAVAILABLE"
-  | "DAILY_LIMIT"
-  | "BLOCKED"
-  | "FORBIDDEN"
-  | "INVALID"
-  | "username_taken"
-  | "empty"
-  | "not_found"
-  | "self"
-  | "admin_cannot_leave"
-  | "not_connected";
-
-export class RepositoryError extends Error {
-  constructor(
-    public readonly code: RepositoryErrorCode,
-    message = code,
-  ) {
-    super(message);
-    this.name = "RepositoryError";
-  }
-}
+export { RepositoryError } from "./repository";
+export type { RepositoryErrorCode } from "./repository";
 
 const newId = () => crypto.randomUUID();
 const iso = () => new Date().toISOString();
@@ -144,6 +126,22 @@ export class DevRepository implements NetclubRepository {
 
   async getSession() {
     return this.db.currentUserId;
+  }
+
+  async signIn(_email: string, _password: string): Promise<string> {
+    throw new RepositoryError("BACKEND_REQUIRED", "demo_mode");
+  }
+
+  async signUp(_input: SignUpInput): Promise<SignUpResult> {
+    throw new RepositoryError("BACKEND_REQUIRED", "demo_mode");
+  }
+
+  async resetPassword(_email: string): Promise<void> {
+    throw new RepositoryError("BACKEND_REQUIRED", "demo_mode");
+  }
+
+  async updatePassword(_password: string): Promise<void> {
+    throw new RepositoryError("BACKEND_REQUIRED", "demo_mode");
   }
 
   async signInDemo() {
@@ -233,6 +231,10 @@ export class DevRepository implements NetclubRepository {
       if (usernameTaken) throw new RepositoryError("INVALID", "username_taken");
     }
     Object.assign(target, input);
+  }
+
+  async uploadImage(file: File, _kind: UploadKind): Promise<string> {
+    return URL.createObjectURL(file);
   }
 
   // ---------------------------------------------------------------- feed
@@ -615,7 +617,9 @@ export class DevRepository implements NetclubRepository {
     return this.db.recommendations.filter(
       (r) =>
         r.targetId === profileId &&
-        (r.status === "accepted" || r.authorId === this.db.currentUserId),
+        (r.status === "accepted" ||
+          r.authorId === this.db.currentUserId ||
+          r.targetId === this.db.currentUserId),
     );
   }
 

@@ -5,6 +5,10 @@ type ToasterProps = React.ComponentProps<typeof Sonner>;
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
+      theme="dark"
+      position="bottom-right"
+      offset={16}
+      mobileOffset={{ bottom: 80, left: 12, right: 12 }}
       className="toaster group"
       toastOptions={{
         classNames: {

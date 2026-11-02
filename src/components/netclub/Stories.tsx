@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Flag, ImagePlus, Plus, Trash2, X } from "luc
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
+import { RepositoryError } from "@/data/repository";
 import { directoryQuery, storiesQuery } from "@/data/queries";
 import type { Profile, Story } from "@/data/types";
 import { UserAvatar } from "./UserAvatar";
@@ -327,6 +328,7 @@ function StoryComposer({
   const [text, setText] = useState("");
   const [background, setBackground] = useState(BACKGROUNDS[0] ?? "");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const publish = useMutation({
     mutationFn: () => repository.createStory({ text, background, imageUrl }),
@@ -340,13 +342,27 @@ function StoryComposer({
     onError: () => toast.error(t("errors.generic")),
   });
 
-  function pickImage(file: File | undefined) {
+  async function pickImage(file: File | undefined) {
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      toast.error(t("errors.generic"));
+      toast.error(t("errors.invalidFileType"));
       return;
     }
-    setImageUrl(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const url = await repository.uploadImage(file, "story");
+      setImageUrl(url);
+    } catch (error) {
+      if (error instanceof RepositoryError && error.message === "file_too_large") {
+        toast.error(t("errors.fileTooLarge"));
+      } else if (error instanceof RepositoryError && error.message === "invalid_file_type") {
+        toast.error(t("errors.invalidFileType"));
+      } else {
+        toast.error(t("errors.upload"));
+      }
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -394,14 +410,24 @@ function StoryComposer({
                 />
               ))}
             </div>
-            <label className="inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-primary">
+            <label
+              aria-disabled={uploading}
+              className={cn(
+                "inline-flex cursor-pointer items-center gap-1 text-xs text-muted-foreground hover:text-primary",
+                uploading && "cursor-wait opacity-60",
+              )}
+            >
               <ImagePlus className="h-4 w-4" />
-              {t("stories.chooseImage")}
+              {uploading ? t("auth.uploading") : t("stories.chooseImage")}
               <input
                 type="file"
-                accept="image/*"
+                accept="image/png,image/jpeg,image/webp"
                 className="sr-only"
-                onChange={(event) => pickImage(event.target.files?.[0])}
+                disabled={uploading}
+                onChange={(event) => {
+                  void pickImage(event.target.files?.[0]);
+                  event.target.value = "";
+                }}
               />
             </label>
           </div>
@@ -413,9 +439,9 @@ function StoryComposer({
           </Button>
           <Button
             onClick={() => publish.mutate()}
-            disabled={publish.isPending || (!text.trim() && !imageUrl)}
+            disabled={publish.isPending || uploading || (!text.trim() && !imageUrl)}
           >
-            {t("stories.publish")}
+            {uploading ? t("auth.uploading") : t("stories.publish")}
           </Button>
         </DialogFooter>
       </DialogContent>

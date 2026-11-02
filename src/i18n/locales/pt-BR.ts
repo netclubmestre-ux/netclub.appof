@@ -31,6 +31,7 @@ export const ptBR = {
   "common.success": "Feito!",
   "common.all": "Todos",
   "common.filters": "Filtros",
+  "common.moreOptions": "Mais opções",
   "common.clear": "Limpar",
   "common.results": "resultados",
   "common.noResults": "Nenhum resultado encontrado.",
@@ -110,10 +111,10 @@ export const ptBR = {
   "auth.or": "ou",
   "auth.demoTitle": "Acesso de demonstração",
   "auth.demoBody":
-    "A autenticação real será habilitada quando o Supabase do aplicativo estiver configurado. Por enquanto, use uma sessão local de demonstração.",
+    "O modo demonstração está ativo (VITE_DATA_SOURCE=demo). A autenticação real usa o Supabase exclusivo do netclub.app; para testá-la, defina VITE_DATA_SOURCE=supabase no .env.",
   "auth.demoSignIn": "Entrar na demonstração",
   "auth.demoSignUp": "Criar conta de demonstração",
-  "auth.demoNote": "Nenhum e-mail é enviado e nenhuma senha é armazenada.",
+  "auth.demoNote": "Nenhum e-mail é enviado e nenhuma senha é armazenada neste modo.",
   "auth.emailConfirm": "Conta criada. Confirme seu e-mail para entrar.",
   "auth.termsNotice":
     "Ao continuar, você declara ter lido os Termos de Uso e a Política de Privacidade.",
@@ -123,6 +124,25 @@ export const ptBR = {
   "auth.backendRequired": "A recuperação de senha por e-mail exige o backend configurado.",
   "auth.checkEmail": "Se o e-mail existir, enviaremos um link de recuperação.",
   "auth.googleUnavailable": "Login com Google será habilitado com o backend.",
+  "auth.emailInUse": "Este e-mail já possui uma conta. Entre ou recupere a senha.",
+  "auth.rateLimit": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+  "auth.confirmEmailTitle": "Confirme seu e-mail",
+  "auth.confirmEmailBody":
+    "Enviamos um link de confirmação para {email}. Depois de confirmar, volte e entre.",
+  "auth.backendNote":
+    "Seus dados são gravados no backend do NetClub e protegidos por RLS (Row Level Security).",
+  "auth.sendResetLink": "Enviar link de recuperação",
+  "auth.resetSent": "Link enviado.",
+  "auth.passwordUpdated": "Senha atualizada. Você já está conectado.",
+  "auth.mismatch": "As senhas não coincidem.",
+  "auth.recoveryTitle": "Defina sua nova senha",
+  "auth.recoveryBody": "Você abriu um link de recuperação. Escolha uma nova senha para continuar.",
+  "auth.uploading": "Enviando...",
+  "auth.demoUnavailable":
+    "Disponível apenas com o backend configurado (VITE_DATA_SOURCE=supabase).",
+  "auth.checkEmailTitle": "Verifique seu e-mail",
+  "auth.checkEmailBody":
+    "Se {email} tiver uma conta, o link de recuperação chegará em instantes. Confira também a caixa de spam.",
 
   "onboarding.title": "Complete seu perfil profissional",
   "onboarding.subtitle": "Essas informações alimentam suas recomendações e o NetMach.",
@@ -159,7 +179,7 @@ export const ptBR = {
   "onboarding.completeBody": "Agora você pode explorar o NetMach, os grupos e o feed.",
   "onboarding.goHome": "Ir para o início",
   "onboarding.uploadNote":
-    "A imagem fica apenas nesta sessão até o armazenamento do backend ser configurado.",
+    "JPG, PNG ou WebP até 5 MB. A imagem é enviada para o armazenamento do aplicativo.",
   "onboarding.usernameTaken": "Este nome de usuário já está em uso.",
 
   "experience.beginner": "Iniciante",
@@ -208,7 +228,7 @@ export const ptBR = {
   "home.groups": "Grupos para você",
   "home.stories": "Stories",
   "home.addStory": "Criar story",
-  "home.yourStory": "Seu story",
+  "home.yourStory": "Adicionar",
   "home.recommended": "Recomendado",
   "home.connect": "Conectar",
   "home.connected": "Conectado",
@@ -216,6 +236,7 @@ export const ptBR = {
   "home.accept": "Aceitar",
   "home.decline": "Recusar",
   "home.emptyFeed": "Ainda não há publicações. Comece a conversa.",
+  "home.emptyFeedBody": "Publique algo ou conecte-se com profissionais para ver conteúdo aqui.",
   "home.emptyPeople": "Nenhuma sugestão por agora.",
   "home.onboardingTitle": "Complete seu onboarding",
   "home.onboardingBody": "Adicione competências e objetivos para melhores recomendações.",
@@ -246,7 +267,7 @@ export const ptBR = {
   "stories.by": "Story de {name}",
   "stories.expired": "Este story expirou.",
   "stories.uploadNote":
-    "A imagem é exibida apenas nesta sessão. O upload real será habilitado com o Storage do backend.",
+    "JPG, PNG ou WebP até 5 MB. A imagem é enviada para o armazenamento do aplicativo.",
   "stories.yours": "Seu story",
   "stories.viewers": "Visualizações",
   "stories.deleted": "Story excluído.",
@@ -397,6 +418,7 @@ export const ptBR = {
 
   "notifications.title": "Notificações",
   "notifications.markAllRead": "Marcar todas como lidas",
+  "notifications.markAllReadNone": "Nenhuma notificação não lida.",
   "notifications.empty": "Nenhuma notificação ainda.",
   "notifications.like": "curtiu sua publicação",
   "notifications.comment": "comentou na sua publicação",
@@ -527,7 +549,8 @@ export const ptBR = {
     "A exclusão remove perfil, publicações, mensagens e arquivos. O processo definitivo depende do backend.",
   "settings.deleteAccountConfirm": "Digite EXCLUIR para confirmar a solicitação.",
   "settings.requestDeletion": "Solicitar exclusão",
-  "settings.deletionRequested": "Solicitação registrada localmente (demonstração).",
+  "settings.deletionRequested":
+    "Solicitação registrada. A exclusão será processada conforme a política de privacidade.",
   "settings.deletionPending": "Solicitação pendente desde {date}.",
   "settings.terms": "Termos de Uso",
   "settings.privacyPolicy": "Política de Privacidade",
@@ -542,6 +565,9 @@ export const ptBR = {
   "settings.dataMode": "Fonte de dados",
   "settings.dataModeDemo": "Demonstração local",
   "settings.dataModeSupabase": "Supabase",
+  "settings.dataModeNote": "Os dados são gravados no Supabase com Row Level Security (RLS).",
+  "settings.emailBackendNote":
+    "O envio de e-mails depende da configuração do provedor de e-mail no backend.",
   "settings.notAccepted": "Não aceito",
   "settings.moderation": "Moderação de denúncias",
   "settings.moderationHint":
@@ -617,6 +643,10 @@ export const ptBR = {
   "errors.blocked": "Ação não permitida com este usuário.",
   "errors.notConnected": "É necessário estar conectado para esta ação.",
   "errors.selfAction": "Não é possível executar esta ação em você mesmo.",
+  "errors.upload": "Não foi possível enviar a imagem.",
+  "errors.network": "Falha de conexão. Verifique sua internet e tente novamente.",
+  "errors.fileTooLarge": "A imagem deve ter até 5 MB.",
+  "errors.invalidFileType": "Formato inválido. Use JPG, PNG ou WebP.",
 } as const;
 
 export type TranslationKey = keyof typeof ptBR;

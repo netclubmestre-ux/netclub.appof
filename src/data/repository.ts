@@ -31,6 +31,51 @@ import type {
   UserSettings,
 } from "./types";
 
+export type RepositoryErrorCode =
+  | "NOT_AUTHENTICATED"
+  | "PREMIUM_REQUIRED"
+  | "PAYMENTS_UNAVAILABLE"
+  | "DAILY_LIMIT"
+  | "BLOCKED"
+  | "FORBIDDEN"
+  | "INVALID"
+  | "username_taken"
+  | "empty"
+  | "not_found"
+  | "self"
+  | "admin_cannot_leave"
+  | "not_connected"
+  | "BACKEND_REQUIRED"
+  | "INVALID_CREDENTIALS"
+  | "EMAIL_NOT_CONFIRMED"
+  | "EMAIL_TAKEN"
+  | "WEAK_PASSWORD"
+  | "NETWORK";
+
+export class RepositoryError extends Error {
+  constructor(
+    public readonly code: RepositoryErrorCode,
+    message: string = code,
+  ) {
+    super(message);
+    this.name = "RepositoryError";
+  }
+}
+
+export interface SignUpInput {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface SignUpResult {
+  /** `null` quando o Supabase exige confirmação por e-mail. */
+  userId: string | null;
+  needsConfirmation: boolean;
+}
+
+export type UploadKind = "avatar" | "portfolio" | "story";
+
 export interface OnboardingInput {
   fullName: string;
   username: string;
@@ -99,6 +144,15 @@ export interface NetclubRepository {
 
   // Sessão
   getSession(): Promise<string | null>;
+  /** Login real por e-mail e senha (Supabase). */
+  signIn(email: string, password: string): Promise<string>;
+  /** Cadastro real. Pode exigir confirmação por e-mail. */
+  signUp(input: SignUpInput): Promise<SignUpResult>;
+  /** Envia o link de recuperação de senha. */
+  resetPassword(email: string): Promise<void>;
+  /** Define a nova senha usando a sessão de recuperação. */
+  updatePassword(password: string): Promise<void>;
+  /** Sessão local de demonstração. */
   signInDemo(): Promise<string>;
   signUpDemo(fullName: string): Promise<string>;
   signOut(): Promise<void>;
@@ -111,6 +165,8 @@ export interface NetclubRepository {
   getCurrentProfile(): Promise<Profile | null>;
   completeOnboarding(input: OnboardingInput): Promise<void>;
   updateProfile(input: ProfileUpdateInput): Promise<void>;
+  /** Envia uma imagem para o Storage e devolve a URL pública. */
+  uploadImage(file: File, kind: UploadKind): Promise<string>;
 
   // Feed
   getFeed(): Promise<Post[]>;

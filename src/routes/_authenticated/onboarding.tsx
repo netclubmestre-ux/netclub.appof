@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
 import { meQuery } from "@/data/queries";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import {
   EXPERIENCES,
   GOALS,
@@ -40,6 +40,7 @@ function OnboardingPage() {
   const { data: me } = useQuery(meQuery);
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [form, setForm] = useState({
     fullName: "",
     username: "",
@@ -77,6 +78,25 @@ function OnboardingPage() {
 
   function toggle<T>(list: T[], value: T) {
     return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+  }
+
+  async function pickAvatar(file: File | undefined) {
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const url = await repository.uploadImage(file, "avatar");
+      setAvatarUrl(url);
+    } catch (error) {
+      if (error instanceof RepositoryError && error.message === "file_too_large") {
+        toast.error(t("errors.fileTooLarge"));
+      } else if (error instanceof RepositoryError && error.message === "invalid_file_type") {
+        toast.error(t("errors.invalidFileType"));
+      } else {
+        toast.error(t("errors.upload"));
+      }
+    } finally {
+      setUploadingAvatar(false);
+    }
   }
 
   function next() {
@@ -166,15 +186,24 @@ function OnboardingPage() {
             <div className="flex items-center gap-4">
               <UserAvatar name={form.fullName || "NetClub"} url={avatarUrl} className="h-16 w-16" />
               <div>
-                <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground hover:text-primary">
-                  <Upload className="h-4 w-4" /> {t("onboarding.avatar")}
+                <label
+                  aria-disabled={uploadingAvatar}
+                  className={cn(
+                    "inline-flex cursor-pointer items-center gap-2 rounded-full border px-3 py-1.5 text-xs text-muted-foreground hover:text-primary",
+                    uploadingAvatar && "cursor-wait opacity-60",
+                  )}
+                >
+                  <Upload className="h-4 w-4" />{" "}
+                  {uploadingAvatar ? t("auth.uploading") : t("onboarding.avatar")}
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/png,image/jpeg,image/webp"
                     className="sr-only"
+                    disabled={uploadingAvatar}
                     onChange={(event) => {
                       const file = event.target.files?.[0];
-                      if (file) setAvatarUrl(URL.createObjectURL(file));
+                      void pickAvatar(file);
+                      event.target.value = "";
                     }}
                   />
                 </label>

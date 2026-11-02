@@ -14,7 +14,7 @@ export function Tag({
   className?: string;
 }) {
   const base =
-    "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors";
+    "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-medium transition-colors";
   if (!onClick) {
     return (
       <span

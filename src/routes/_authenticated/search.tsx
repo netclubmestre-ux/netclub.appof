@@ -21,7 +21,7 @@ import {
   type GoalId,
   type SkillId,
 } from "@/data/types";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import { PageHeader } from "@/components/netclub/PageHeader";
 import { EmptyState } from "@/components/netclub/EmptyState";
 import { PersonCard } from "@/components/netclub/PersonCard";
@@ -177,7 +177,6 @@ function SearchPage() {
           value={term}
           onChange={(event) => setTerm(event.target.value)}
           type="search"
-          autoFocus
           placeholder={t("search.placeholder")}
           aria-label={t("search.placeholder")}
           className="pl-9"
@@ -192,7 +191,7 @@ function SearchPage() {
             onClick={() => setTab(item.id)}
             aria-pressed={tab === item.id}
             className={cn(
-              "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+              "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors sm:py-1.5",
               tab === item.id
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",

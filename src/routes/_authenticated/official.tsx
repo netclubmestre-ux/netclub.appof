@@ -79,7 +79,7 @@ function OfficialPage() {
         {t("official.disclaimer")}
       </div>
 
-      <div className="no-scrollbar mt-5 flex gap-1 overflow-x-auto rounded-xl border bg-surface-2/50 p-1">
+      <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border bg-surface-2/50 p-1 sm:flex">
         {TABS.map(({ id, labelKey, icon: Icon }) => (
           <button
             key={id}
@@ -87,13 +87,14 @@ function OfficialPage() {
             onClick={() => setTab(id)}
             aria-pressed={tab === id}
             className={cn(
-              "flex flex-1 shrink-0 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+              "flex min-w-0 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-xs font-medium transition-colors sm:flex-1 sm:px-3 sm:py-2",
               tab === id
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
-            <Icon className="h-3.5 w-3.5" /> {t(labelKey)}
+            <Icon className="h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">{t(labelKey)}</span>
           </button>
         ))}
       </div>
@@ -109,7 +110,7 @@ function OfficialPage() {
           />
         ) : (
           <div className="space-y-4">
-            <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-wrap gap-2">
               {NEWS_CATEGORIES.map((item) => (
                 <Tag
                   key={item.id}

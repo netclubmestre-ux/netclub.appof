@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
 import { clubQuery, clubsQuery, directoryQuery, feedQuery, meQuery } from "@/data/queries";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import { EmptyState } from "@/components/netclub/EmptyState";
 import { PostCard } from "@/components/netclub/PostCard";
 import { UserAvatar } from "@/components/netclub/UserAvatar";
@@ -173,7 +173,7 @@ function ClubPage() {
             onClick={() => setTab(item.id)}
             aria-pressed={tab === item.id}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+              "flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors sm:py-1.5",
               tab === item.id
                 ? "bg-card text-foreground shadow-sm"
                 : "text-muted-foreground hover:text-foreground",

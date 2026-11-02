@@ -12,7 +12,7 @@ import {
   meQuery,
   messagesQuery,
 } from "@/data/queries";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import { UserAvatar } from "@/components/netclub/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

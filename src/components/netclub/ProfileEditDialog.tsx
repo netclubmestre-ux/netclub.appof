@@ -4,7 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
-import { RepositoryError } from "@/data/dev-repository";
+import { RepositoryError } from "@/data/repository";
 import {
   EXPERIENCES,
   GOALS,

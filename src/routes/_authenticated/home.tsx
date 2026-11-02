@@ -85,15 +85,15 @@ function HomeContent({ me }: { me: Profile }) {
   const suggestedClubs = clubs.slice(0, 3);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 pb-6 pt-5 md:px-6 md:pt-8">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="mx-auto w-full max-w-5xl px-4 pb-6 pt-4 md:px-6 md:pt-8">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
         <div className="min-w-0">
           <header className="fade-up">
             <p className="text-sm font-medium text-primary">{greeting}</p>
-            <h1 className="mt-1 text-2xl font-bold leading-tight md:text-3xl">
+            <h1 className="mt-1 text-[22px] font-bold leading-tight sm:text-2xl md:text-3xl">
               {t("common.tagline")}
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground">{t("home.subtitle")}</p>
+            <p className="mt-1.5 text-sm text-muted-foreground">{t("home.subtitle")}</p>
           </header>
 
           {!me.onboarded && (
@@ -112,11 +112,11 @@ function HomeContent({ me }: { me: Profile }) {
             </Link>
           )}
 
-          <div className="mt-6">
+          <div className="mt-5">
             <Stories me={me} />
           </div>
 
-          <section className="surface mt-6 p-4">
+          <section className="surface mt-5 p-4">
             <div className="flex gap-3">
               <UserAvatar name={me.fullName} url={me.avatarUrl} className="h-10 w-10" />
               <Textarea
@@ -140,12 +140,18 @@ function HomeContent({ me }: { me: Profile }) {
             </div>
           </section>
 
-          <h2 className="mb-3 mt-7 text-lg font-semibold">{t("home.feed")}</h2>
+          <h2 className="mb-3 mt-6 text-lg font-semibold">{t("home.feed")}</h2>
           <div className="space-y-4">
             {feed.length === 0 && (
-              <p className="surface px-4 py-10 text-center text-sm text-muted-foreground">
-                {t("home.emptyFeed")}
-              </p>
+              <div className="surface flex items-start gap-3 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-deep">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{t("home.emptyFeed")}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{t("home.emptyFeedBody")}</p>
+                </div>
+              </div>
             )}
             {feed.map((post) => (
               <PostCard

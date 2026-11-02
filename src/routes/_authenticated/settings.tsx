@@ -222,7 +222,9 @@ function SettingsPage() {
               onCheckedChange={(checked) => update.mutate({ emailNotifications: checked })}
             />
           </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">{t("common.demoNotice")}</p>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            {isDemo ? t("common.demoNotice") : t("settings.emailBackendNote")}
+          </p>
         </section>
 
         <section className="surface p-5">
@@ -335,7 +337,9 @@ function SettingsPage() {
           <p className="mt-2 text-sm">
             {isDemo ? t("settings.dataModeDemo") : t("settings.dataModeSupabase")}
           </p>
-          <p className="mt-1 text-[11px] text-muted-foreground">{t("common.demoNotice")}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            {isDemo ? t("common.demoNotice") : t("settings.dataModeNote")}
+          </p>
           <p className="mt-3 text-[11px] text-muted-foreground">
             {t("settings.version")}: 0.1.0 · NetClub MVP
           </p>
@@ -356,13 +360,13 @@ function SettingsPage() {
           ) : (
             <div className="mt-3 space-y-2">
               <Label htmlFor="confirm-delete">{t("settings.deleteAccountConfirm")}</Label>
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input
                   id="confirm-delete"
                   value={confirmText}
                   onChange={(event) => setConfirmText(event.target.value)}
                   placeholder={confirmWord}
-                  className="max-w-48"
+                  className="w-full sm:max-w-48"
                 />
                 <Button
                   variant="destructive"

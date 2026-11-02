@@ -33,6 +33,7 @@ export const en = {
   "common.success": "Done!",
   "common.all": "All",
   "common.filters": "Filters",
+  "common.moreOptions": "More options",
   "common.clear": "Clear",
   "common.results": "results",
   "common.noResults": "No results found.",
@@ -112,10 +113,10 @@ export const en = {
   "auth.or": "or",
   "auth.demoTitle": "Demo access",
   "auth.demoBody":
-    "Real authentication will be enabled once the app's Supabase is configured. For now, use a local demo session.",
+    "Demo mode is active (VITE_DATA_SOURCE=demo). Real authentication uses the netclub.app Supabase project; to test it, set VITE_DATA_SOURCE=supabase in .env.",
   "auth.demoSignIn": "Sign in to the demo",
   "auth.demoSignUp": "Create demo account",
-  "auth.demoNote": "No email is sent and no password is stored.",
+  "auth.demoNote": "No email is sent and no password is stored in this mode.",
   "auth.emailConfirm": "Account created. Confirm your email to sign in.",
   "auth.termsNotice":
     "By continuing, you confirm you have read the Terms of Use and Privacy Policy.",
@@ -125,6 +126,24 @@ export const en = {
   "auth.backendRequired": "Email password recovery requires the configured backend.",
   "auth.checkEmail": "If the email exists, we will send a recovery link.",
   "auth.googleUnavailable": "Google sign-in will be enabled with the backend.",
+  "auth.emailInUse": "This email already has an account. Sign in or recover your password.",
+  "auth.rateLimit": "Too many attempts. Wait a few minutes and try again.",
+  "auth.confirmEmailTitle": "Confirm your email",
+  "auth.confirmEmailBody":
+    "We sent a confirmation link to {email}. After confirming, come back and sign in.",
+  "auth.backendNote":
+    "Your data is stored in the NetClub backend and protected by RLS (Row Level Security).",
+  "auth.sendResetLink": "Send recovery link",
+  "auth.resetSent": "Link sent.",
+  "auth.passwordUpdated": "Password updated. You are signed in.",
+  "auth.mismatch": "Passwords do not match.",
+  "auth.recoveryTitle": "Set your new password",
+  "auth.recoveryBody": "You opened a recovery link. Choose a new password to continue.",
+  "auth.uploading": "Uploading...",
+  "auth.demoUnavailable": "Available only with the backend configured (VITE_DATA_SOURCE=supabase).",
+  "auth.checkEmailTitle": "Check your email",
+  "auth.checkEmailBody":
+    "If {email} has an account, the recovery link will arrive shortly. Check your spam folder too.",
 
   "onboarding.title": "Complete your professional profile",
   "onboarding.subtitle": "This information powers your recommendations and NetMach.",
@@ -160,8 +179,7 @@ export const en = {
   "onboarding.completeTitle": "Profile ready",
   "onboarding.completeBody": "You can now explore NetMach, groups and the feed.",
   "onboarding.goHome": "Go to home",
-  "onboarding.uploadNote":
-    "The image stays in this session only until backend storage is configured.",
+  "onboarding.uploadNote": "JPG, PNG or WebP up to 5 MB. The image is uploaded to the app storage.",
   "onboarding.usernameTaken": "This username is already taken.",
 
   "experience.beginner": "Beginner",
@@ -210,7 +228,7 @@ export const en = {
   "home.groups": "Groups for you",
   "home.stories": "Stories",
   "home.addStory": "Create story",
-  "home.yourStory": "Your story",
+  "home.yourStory": "Add story",
   "home.recommended": "Recommended",
   "home.connect": "Connect",
   "home.connected": "Connected",
@@ -218,6 +236,7 @@ export const en = {
   "home.accept": "Accept",
   "home.decline": "Decline",
   "home.emptyFeed": "No posts yet. Start the conversation.",
+  "home.emptyFeedBody": "Publish something or connect with professionals to see content here.",
   "home.emptyPeople": "No suggestions right now.",
   "home.onboardingTitle": "Complete your onboarding",
   "home.onboardingBody": "Add skills and goals for better recommendations.",
@@ -247,8 +266,7 @@ export const en = {
   "stories.prev": "Previous story",
   "stories.by": "Story by {name}",
   "stories.expired": "This story has expired.",
-  "stories.uploadNote":
-    "The image is shown in this session only. Real upload will be enabled with backend storage.",
+  "stories.uploadNote": "JPG, PNG or WebP up to 5 MB. The image is uploaded to the app storage.",
   "stories.yours": "Your story",
   "stories.viewers": "Views",
   "stories.deleted": "Story deleted.",
@@ -399,6 +417,7 @@ export const en = {
 
   "notifications.title": "Notifications",
   "notifications.markAllRead": "Mark all as read",
+  "notifications.markAllReadNone": "No unread notifications.",
   "notifications.empty": "No notifications yet.",
   "notifications.like": "liked your post",
   "notifications.comment": "commented on your post",
@@ -529,7 +548,8 @@ export const en = {
     "Deletion removes profile, posts, messages and files. The definitive process depends on the backend.",
   "settings.deleteAccountConfirm": "Type DELETE to confirm the request.",
   "settings.requestDeletion": "Request deletion",
-  "settings.deletionRequested": "Request recorded locally (demo).",
+  "settings.deletionRequested":
+    "Request recorded. Deletion will be processed according to the privacy policy.",
   "settings.deletionPending": "Request pending since {date}.",
   "settings.terms": "Terms of Use",
   "settings.privacyPolicy": "Privacy Policy",
@@ -544,6 +564,9 @@ export const en = {
   "settings.dataMode": "Data source",
   "settings.dataModeDemo": "Local demo",
   "settings.dataModeSupabase": "Supabase",
+  "settings.dataModeNote": "Data is stored in Supabase with Row Level Security (RLS).",
+  "settings.emailBackendNote":
+    "Email delivery depends on the email provider configured in the backend.",
   "settings.notAccepted": "Not accepted",
   "settings.moderation": "Report moderation",
   "settings.moderationHint":
@@ -619,4 +642,8 @@ export const en = {
   "errors.blocked": "Action not allowed with this user.",
   "errors.notConnected": "You must be connected for this action.",
   "errors.selfAction": "You cannot perform this action on yourself.",
+  "errors.upload": "Could not upload the image.",
+  "errors.network": "Connection failed. Check your internet and try again.",
+  "errors.fileTooLarge": "The image must be up to 5 MB.",
+  "errors.invalidFileType": "Invalid format. Use JPG, PNG or WebP.",
 } satisfies Record<TranslationKey, string>;

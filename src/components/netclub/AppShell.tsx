@@ -127,20 +127,21 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b bg-background/90 px-3 py-2.5 backdrop-blur md:px-6">
-          <Link to="/home" className="md:hidden">
+          <Link to="/home" className="shrink-0 md:hidden">
             <Logo className="text-xl" />
           </Link>
           <Link
             to="/search"
-            className="ml-auto flex flex-1 items-center gap-2 rounded-full border bg-surface-2/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground md:ml-0 md:max-w-sm"
+            className="ml-auto flex min-w-0 flex-1 items-center gap-2 rounded-full border bg-surface-2/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground md:ml-0 md:max-w-sm"
             aria-label={t("search.title")}
           >
-            <Search className="h-4 w-4" />
-            <span className="truncate">{t("search.placeholder")}</span>
+            <Search className="h-4 w-4 shrink-0" />
+            <span className="truncate md:hidden">{t("search.title")}</span>
+            <span className="hidden min-w-0 truncate md:inline">{t("search.placeholder")}</span>
           </Link>
           <Link
             to="/notifications"
-            className="relative rounded-full p-2 text-muted-foreground hover:text-foreground"
+            className="relative shrink-0 rounded-full p-2 text-muted-foreground hover:text-foreground"
             aria-label={t("nav.notifications")}
           >
             <Bell className="h-5 w-5" />
@@ -152,7 +153,7 @@ export function AppShell() {
             <LanguageSelect className="h-8 w-full text-xs" />
           </div>
           {me && (
-            <Link to="/profile" className="md:hidden" aria-label={t("nav.profile")}>
+            <Link to="/profile" className="shrink-0 md:hidden" aria-label={t("nav.profile")}>
               <UserAvatar name={me.fullName} url={me.avatarUrl} className="h-8 w-8" />
             </Link>
           )}
@@ -168,12 +169,12 @@ export function AppShell() {
           </div>
         )}
 
-        <main className="min-w-0 flex-1 pb-24 md:pb-10">
+        <main className="min-w-0 flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-10">
           <Outlet />
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-background/95 backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {MOBILE_NAV.map(({ to, labelKey, icon: Icon }) => {
           const active = pathname.startsWith(to);
           return (

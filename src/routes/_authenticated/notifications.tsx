@@ -97,6 +97,7 @@ function NotificationsPage() {
             variant="secondary"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending || unread === 0}
+            title={unread === 0 ? t("notifications.markAllReadNone") : undefined}
           >
             <CheckCheck className="mr-1.5 h-4 w-4" /> {t("notifications.markAllRead")}
           </Button>

@@ -61,7 +61,7 @@ function ClubsPage() {
         />
       </div>
 
-      <div className="no-scrollbar mb-6 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-6 flex flex-wrap gap-2">
         <Tag active={category === "all"} onClick={() => setCategory("all")}>
           {t("common.all")}
         </Tag>
