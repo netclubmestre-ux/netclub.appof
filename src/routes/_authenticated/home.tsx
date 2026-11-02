@@ -1,36 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import {
-  Bell,
-  Search,
-  Plus,
-  Check,
-  Users,
-  Code2,
-  Sparkles,
-  TrendingUp,
-  LineChart,
-} from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { ArrowRight, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  categoryCover,
-  connectionState,
-  connectionsQuery,
-  connectWith,
-  feedQuery,
-  formatCount,
-  groupsQuery,
-  meQuery,
-  notificationsQuery,
-  peopleQuery,
-} from "@/lib/netclub";
-import { Logo } from "@/components/netclub/Logo";
-import { UserAvatar } from "@/components/netclub/UserAvatar";
+import { useI18n } from "@/i18n";
+import { useRepository } from "@/data/provider";
+import { clubsQuery, connectionsQuery, feedQuery, meQuery, peopleQuery } from "@/data/queries";
+import { connectionState } from "@/lib/netclub";
+import type { Profile } from "@/data/types";
 import { PostCard } from "@/components/netclub/PostCard";
+import { Stories } from "@/components/netclub/Stories";
+import { UserAvatar } from "@/components/netclub/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -44,320 +27,251 @@ export const Route = createFileRoute("/_authenticated/home")({
   loader: ({ context: { queryClient } }) =>
     Promise.all([
       queryClient.ensureQueryData(meQuery),
-      queryClient.ensureQueryData(peopleQuery),
-      queryClient.ensureQueryData(groupsQuery),
       queryClient.ensureQueryData(feedQuery),
+      queryClient.ensureQueryData(clubsQuery),
+      queryClient.ensureQueryData(peopleQuery),
       queryClient.ensureQueryData(connectionsQuery),
     ]),
   component: HomePage,
 });
 
-const categoryIcon: Record<string, typeof Code2> = {
-  tech: Code2,
-  creators: Sparkles,
-  growth: TrendingUp,
-  finance: LineChart,
-};
-
 function HomePage() {
+  const { t } = useI18n();
   const { data: me } = useSuspenseQuery(meQuery);
-  const { data: people } = useSuspenseQuery(peopleQuery);
-  const { data: groups } = useSuspenseQuery(groupsQuery);
-  const { data: feed } = useSuspenseQuery(feedQuery);
-  const { data: conns } = useSuspenseQuery(connectionsQuery);
-  const { data: notifs } = useQuery(notificationsQuery);
-  const unread = notifs?.some((n) => !n.read);
-  const qc = useQueryClient();
-  const [q, setQ] = useState("");
+  if (!me) return null;
+  return <HomeContent me={me} />;
+}
+
+function HomeContent({ me }: { me: Profile }) {
+  const { t } = useI18n();
+  const repository = useRepository();
+  const queryClient = useQueryClient();
+  const { data: feed = [] } = useSuspenseQuery(feedQuery);
+  const { data: clubs = [] } = useSuspenseQuery(clubsQuery);
+  const { data: people = [] } = useSuspenseQuery(peopleQuery);
+  const { data: connections = [] } = useSuspenseQuery(connectionsQuery);
   const [draft, setDraft] = useState("");
 
-  const connect = useMutation({
-    mutationFn: (id: string) => connectWith(me.id, id, conns),
-    onSuccess: (outcome) => {
-      toast.success(outcome === "accepted" ? "Conexão aceita" : "Convite de conexão enviado");
-      qc.invalidateQueries({ queryKey: ["connections"] });
-    },
-    onError: () => toast.error("Não foi possível conectar"),
-  });
-
   const publish = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("posts")
-        .insert({ author_id: me.id, content: draft.trim() });
-      if (error) throw error;
-    },
+    mutationFn: () => repository.createPost(draft),
     onSuccess: () => {
       setDraft("");
-      qc.invalidateQueries({ queryKey: ["feed"] });
+      void queryClient.invalidateQueries({ queryKey: ["feed"] });
+      toast.success(t("common.success"));
     },
-    onError: () => toast.error("Não foi possível publicar"),
+    onError: () => toast.error(t("errors.generic")),
   });
 
-  const term = q.trim().toLowerCase();
-  const results = term
-    ? {
-        people: people
-          .filter((p) => `${p.full_name} ${p.headline}`.toLowerCase().includes(term))
-          .slice(0, 5),
-        groups: groups.filter((g) => g.name.toLowerCase().includes(term)).slice(0, 5),
-        posts: feed.filter((p) => p.content.toLowerCase().includes(term)).slice(0, 5),
-      }
-    : null;
+  const connect = useMutation({
+    mutationFn: (id: string) => repository.sendConnectionRequest(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["connections"] });
+      void queryClient.invalidateQueries({ queryKey: ["people"] });
+      toast.success(t("home.pending"));
+    },
+    onError: () => toast.error(t("errors.generic")),
+  });
 
-  const firstName = me.full_name.split(" ")[0] || "por aqui";
+  const firstName = me.fullName.split(" ")[0] || "";
+  const hour = new Date().getHours();
+  const greeting =
+    hour < 12
+      ? t("home.greetingMorning", { name: firstName })
+      : hour < 18
+        ? t("home.greetingAfternoon", { name: firstName })
+        : t("home.greetingEvening", { name: firstName });
+
+  const suggestions = people.slice(0, 6);
+  const suggestedClubs = clubs.slice(0, 3);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 pt-5 md:pt-8">
-      <header className="flex items-center justify-between md:hidden">
-        <Logo />
-        <NotifBell unread={!!unread} />
-      </header>
-      <div className="hidden justify-end md:flex">
-        <NotifBell unread={!!unread} />
-      </div>
+    <div className="mx-auto w-full max-w-5xl px-4 pb-6 pt-5 md:px-6 md:pt-8">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0">
+          <header className="fade-up">
+            <p className="text-sm font-medium text-primary">{greeting}</p>
+            <h1 className="mt-1 text-2xl font-bold leading-tight md:text-3xl">
+              {t("common.tagline")}
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">{t("home.subtitle")}</p>
+          </header>
 
-      <div className="relative mt-4">
-        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          type="search"
-          aria-label="Buscar pessoas, grupos ou publicações"
-          placeholder="Busque pessoas, grupos ou publicações…"
-          className="h-12 w-full rounded-2xl border bg-card pl-12 pr-4 text-sm outline-none placeholder:text-muted-foreground focus:border-primary"
-        />
-        {results && (
-          <div className="surface absolute inset-x-0 top-14 z-30 max-h-96 overflow-auto p-2">
-            {[...results.people, ...results.groups, ...results.posts].length === 0 && (
-              <p className="p-3 text-sm text-muted-foreground">Nada encontrado.</p>
-            )}
-            {results.people.map((p) => (
-              <Link
-                key={p.id}
-                to="/members/$id"
-                params={{ id: p.id }}
-                className="flex items-center gap-3 rounded-lg p-2 hover:bg-secondary"
-              >
-                <UserAvatar name={p.full_name} url={p.avatar_url} className="h-8 w-8 text-xs" />
-                <div className="text-sm">
-                  <p className="font-medium">{p.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{p.headline || "Pessoa"}</p>
-                </div>
-              </Link>
-            ))}
-            {results.groups.map((g) => (
-              <Link
-                key={g.id}
-                to="/clubs"
-                className="flex items-center gap-3 rounded-lg p-2 text-sm hover:bg-secondary"
-              >
-                <Users className="h-4 w-4 text-primary" /> {g.name}
-              </Link>
-            ))}
-            {results.posts.map((p) => {
-              const authorId = p.author?.id;
-              return (
-                <div key={p.id} className="truncate rounded-lg p-2 text-sm hover:bg-secondary">
-                  “{p.content}” —{" "}
-                  {authorId ? (
-                    <Link
-                      to="/members/$id"
-                      params={{ id: authorId }}
-                      className="text-muted-foreground hover:text-primary"
-                    >
-                      {p.author?.full_name}
-                    </Link>
-                  ) : (
-                    <span className="text-muted-foreground">{p.author?.full_name}</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <section className="mt-7 flex items-center gap-4 fade-up">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-primary">Bem-vindo de volta, {firstName} 👋</p>
-          <h1 className="mt-2 text-3xl font-bold leading-tight md:text-4xl">
-            Conecte-se. Compartilhe.
-            <br />
-            Cresça <span className="text-primary">junto.</span>
-          </h1>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            Conversas que importam e conexões que fazem sua carreira digital avançar.
-          </p>
-        </div>
-        <div className="relative hidden h-32 w-32 shrink-0 sm:block">
-          <div className="orbit absolute inset-0 rounded-full border border-primary/30">
-            <span className="absolute -top-1 left-1/2 h-2 w-2 rounded-full bg-gold" />
-            <span className="absolute right-2 top-6 h-1.5 w-1.5 rounded-full bg-primary" />
-          </div>
-          <div className="absolute inset-5 flex items-center justify-center rounded-full bg-primary-deep/60">
-            <Users className="h-12 w-12 text-primary" strokeWidth={1.5} />
-          </div>
-        </div>
-      </section>
-
-      <SectionHeader title="Pessoas recomendadas" to="/network" label="Ver todas" />
-      <div className="no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-1">
-        {people.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Convide colegas — novos membros aparecerão aqui.
-          </p>
-        )}
-        {people.slice(0, 12).map((p) => {
-          const state = connectionState(me.id, p.id, conns);
-          const settled = state.status === "connected" || state.status === "sent";
-          return (
-            <div key={p.id} className="flex w-[72px] shrink-0 flex-col items-center gap-2">
-              <div className="relative">
-                <Link
-                  to="/members/$id"
-                  params={{ id: p.id }}
-                  aria-label={`Ver perfil de ${p.full_name}`}
-                >
-                  <UserAvatar
-                    name={p.full_name}
-                    url={p.avatar_url}
-                    className="h-[72px] w-[72px] border-2 border-primary/50 text-lg"
-                  />
-                </Link>
-                <button
-                  disabled={settled || connect.isPending}
-                  onClick={() => connect.mutate(p.id)}
-                  aria-label={
-                    state.status === "connected"
-                      ? "Conectado"
-                      : state.status === "sent"
-                        ? "Convite pendente"
-                        : `Conectar com ${p.full_name}`
-                  }
-                  className="absolute -bottom-0.5 -right-0.5 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground disabled:opacity-90"
-                >
-                  {settled ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-                </button>
-              </div>
-              <span className="w-full truncate text-center text-sm">
-                {p.full_name.split(" ")[0]}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-
-      <SectionHeader title="Grupos de networking" to="/clubs" label="Ver todos" />
-      <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1">
-        {groups.map((g) => {
-          const Icon = categoryIcon[g.category] ?? Users;
-          const members = g.group_members ?? [];
-          return (
+          {!me.onboarded && (
             <Link
-              key={g.id}
-              to="/clubs"
-              className="surface w-44 shrink-0 overflow-hidden transition-transform hover:-translate-y-0.5"
+              to="/onboarding"
+              className="mt-5 flex items-center gap-3 rounded-xl border border-gold/35 bg-gold/10 p-4 transition-colors hover:bg-gold/15"
             >
-              <div className="relative h-24">
-                <img
-                  src={g.cover_url ?? categoryCover[g.category] ?? categoryCover["tech"]}
-                  alt=""
-                  loading="lazy"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-                <span
-                  className={`absolute bottom-2 left-3 flex h-8 w-8 items-center justify-center rounded-full ${g.category === "creators" ? "bg-gold text-gold-foreground" : "bg-primary-deep text-primary"}`}
-                >
-                  <Icon className="h-4 w-4" />
+              <Sparkles className="h-5 w-5 shrink-0 text-gold" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-gold">
+                  {t("home.onboardingTitle")}
                 </span>
-              </div>
-              <div className="p-3">
-                <p className="truncate font-semibold">{g.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatCount(members.length)} {members.length === 1 ? "membro" : "membros"}
-                </p>
-                <div className="mt-2 flex -space-x-2">
-                  {members.slice(0, 4).map((m) => (
-                    <UserAvatar
-                      key={m.user_id}
-                      name={m.profiles?.full_name ?? ""}
-                      url={m.profiles?.avatar_url}
-                      className="h-6 w-6 border-2 border-card text-[9px]"
-                    />
-                  ))}
-                </div>
-              </div>
+                <span className="block text-xs text-gold/80">{t("home.onboardingBody")}</span>
+              </span>
+              <ArrowRight className="h-4 w-4 shrink-0 text-gold" />
             </Link>
-          );
-        })}
-      </div>
+          )}
 
-      <h2 className="mb-3 mt-8 text-lg font-semibold">Da sua rede</h2>
-      <div className="surface p-4">
-        <div className="flex gap-3">
-          <UserAvatar name={me.full_name} url={me.avatar_url} className="h-10 w-10" />
-          <Textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder="Compartilhe uma dúvida, experiência ou opinião…"
-            className="min-h-[70px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0"
-            maxLength={3000}
-          />
+          <div className="mt-6">
+            <Stories me={me} />
+          </div>
+
+          <section className="surface mt-6 p-4">
+            <div className="flex gap-3">
+              <UserAvatar name={me.fullName} url={me.avatarUrl} className="h-10 w-10" />
+              <Textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={t("home.composerPlaceholder")}
+                aria-label={t("home.composerPlaceholder")}
+                className="min-h-[70px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0"
+                maxLength={3000}
+              />
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <span className="text-[11px] text-muted-foreground">{draft.length}/3000</span>
+              <Button
+                size="sm"
+                disabled={!draft.trim() || publish.isPending}
+                onClick={() => publish.mutate()}
+              >
+                {publish.isPending ? t("home.publishing") : t("home.publish")}
+              </Button>
+            </div>
+          </section>
+
+          <h2 className="mb-3 mt-7 text-lg font-semibold">{t("home.feed")}</h2>
+          <div className="space-y-4">
+            {feed.length === 0 && (
+              <p className="surface px-4 py-10 text-center text-sm text-muted-foreground">
+                {t("home.emptyFeed")}
+              </p>
+            )}
+            {feed.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                meId={me.id}
+                clubName={clubs.find((club) => club.id === post.clubId)?.name}
+              />
+            ))}
+          </div>
         </div>
-        <div className="mt-2 flex justify-end">
-          <Button
-            size="sm"
-            disabled={!draft.trim() || publish.isPending}
-            onClick={() => publish.mutate()}
-          >
-            Publicar
-          </Button>
-        </div>
-      </div>
-      <div className="mt-4 space-y-4">
-        {feed.length === 0 && (
-          <p className="py-10 text-center text-sm text-muted-foreground">
-            Seja a primeira pessoa a publicar algo!
+
+        <aside className="hidden min-w-0 flex-col gap-4 lg:flex">
+          <section className="surface p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">{t("home.people")}</h2>
+              <Link to="/network" className="text-xs text-primary hover:underline">
+                {t("common.seeAll")}
+              </Link>
+            </div>
+            <ul className="mt-3 space-y-3">
+              {suggestions.length === 0 && (
+                <li className="text-xs text-muted-foreground">{t("home.emptyPeople")}</li>
+              )}
+              {suggestions.map((person) => {
+                const state = connectionState(me.id, person.id, connections);
+                return (
+                  <li key={person.id} className="flex items-center gap-2.5">
+                    <Link to="/members/$id" params={{ id: person.id }}>
+                      <UserAvatar
+                        name={person.fullName}
+                        url={person.avatarUrl}
+                        className="h-9 w-9"
+                      />
+                    </Link>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        to="/members/$id"
+                        params={{ id: person.id }}
+                        className="block truncate text-sm font-medium hover:text-primary"
+                      >
+                        {person.fullName}
+                      </Link>
+                      <p className="truncate text-[11px] text-muted-foreground">
+                        {person.headline}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={state.status !== "none" || connect.isPending}
+                      onClick={() => connect.mutate(person.id)}
+                      aria-label={t("home.connect")}
+                      title={
+                        state.status === "connected"
+                          ? t("home.connected")
+                          : state.status === "sent"
+                            ? t("home.pending")
+                            : t("home.connect")
+                      }
+                      className={cn(
+                        "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-primary transition-colors",
+                        state.status === "none"
+                          ? "border-primary/50 hover:bg-primary/10"
+                          : "border-border text-muted-foreground",
+                      )}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section className="surface p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">{t("home.groups")}</h2>
+              <Link to="/clubs" className="text-xs text-primary hover:underline">
+                {t("common.seeAll")}
+              </Link>
+            </div>
+            <ul className="mt-3 space-y-2">
+              {suggestedClubs.map((club) => (
+                <li key={club.id}>
+                  <Link
+                    to="/clubs/$slug"
+                    params={{ slug: club.slug }}
+                    className="flex items-center gap-2.5 rounded-lg p-1.5 transition-colors hover:bg-secondary"
+                  >
+                    <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-deep text-primary">
+                      {club.category === "marketing" || club.category === "paidTraffic" ? (
+                        <TrendingUp className="h-4 w-4" />
+                      ) : (
+                        <Users className="h-4 w-4" />
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{club.name}</span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {t("clubs.members", { count: club.memberIds.length })}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="rounded-2xl border border-gold/30 bg-gold/10 p-4 text-xs text-gold">
+            <p className="flex items-center gap-2 font-semibold">
+              <Sparkles className="h-4 w-4" /> {t("netmach.premiumTitle")}
+            </p>
+            <p className="mt-1 text-gold/80">{t("netmach.premiumBody")}</p>
+            <Link
+              to="/premium"
+              className="mt-2 inline-block font-semibold text-gold hover:underline"
+            >
+              {t("netmach.premiumCta")}
+            </Link>
+          </section>
+
+          <p className="px-1 text-[11px] leading-relaxed text-muted-foreground/80">
+            {t("landing.disclaimer")}
           </p>
-        )}
-        {feed.map((p) => (
-          <PostCard key={p.id} post={p} meId={me.id} />
-        ))}
+        </aside>
       </div>
-    </div>
-  );
-}
-
-function NotifBell({ unread }: { unread: boolean }) {
-  return (
-    <Link
-      to="/notifications"
-      className="relative rounded-full p-2 hover:bg-secondary"
-      aria-label="Notificações"
-    >
-      <Bell className="h-6 w-6" />
-      {unread && <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-gold" />}
-    </Link>
-  );
-}
-
-function SectionHeader({
-  title,
-  to,
-  label,
-}: {
-  title: string;
-  to: "/network" | "/clubs";
-  label: string;
-}) {
-  return (
-    <div className="mb-3 mt-8 flex items-center justify-between">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <Link to={to} className="text-sm text-primary hover:underline">
-        {label}
-      </Link>
     </div>
   );
 }

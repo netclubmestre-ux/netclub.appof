@@ -1,7 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useI18n } from "@/i18n";
 import { Logo } from "@/components/netclub/Logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,121 +10,54 @@ export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
       { title: "Redefinir senha — NetClub" },
-      { name: "description", content: "Defina uma nova senha para sua conta NetClub." },
-      { property: "og:title", content: "Redefinir senha — NetClub" },
-      { property: "og:description", content: "Defina uma nova senha para sua conta NetClub." },
+      { name: "description", content: "Redefina a senha da sua conta NetClub." },
     ],
   }),
   component: ResetPasswordPage,
 });
 
 function ResetPasswordPage() {
-  const navigate = useNavigate();
-  const [password, setPassword] = useState("");
-  const [confirmation, setConfirmation] = useState("");
-  const [ready, setReady] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) setReady(true);
-    });
-
-    // Fluxo PKCE devolve ?code=... em vez de tokens no hash.
-    const code = new URLSearchParams(window.location.search).get("code");
-    const bootstrap = code
-      ? supabase.auth.exchangeCodeForSession(code).then(({ data }) => Boolean(data.session))
-      : supabase.auth.getSession().then(({ data }) => Boolean(data.session));
-
-    bootstrap
-      .then((hasSession) => {
-        if (active) setReady(hasSession);
-      })
-      .catch(() => {
-        if (active) setReady(false);
-      });
-
-    return () => {
-      active = false;
-      data.subscription.unsubscribe();
-    };
-  }, []);
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (password.length < 6) {
-      toast.error("A senha precisa ter ao menos 6 caracteres");
-      return;
-    }
-    if (password !== confirmation) {
-      toast.error("As senhas não coincidem");
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
-      toast.success("Senha atualizada. Entre com a nova senha.");
-      await supabase.auth.signOut();
-      navigate({ to: "/auth", replace: true });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Não foi possível atualizar a senha");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { t } = useI18n();
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="surface w-full max-w-sm p-7 fade-up">
-        <Logo className="text-3xl" />
-        <h1 className="mt-6 text-2xl font-semibold">Definir nova senha</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {ready
-            ? "Escolha uma nova senha para acessar sua conta."
-            : "Abra o link enviado por e-mail para continuar. Se ele expirou, solicite outro na tela de login."}
-        </p>
+        <Link to="/">
+          <Logo className="text-2xl" />
+        </Link>
+        <h1 className="mt-6 text-2xl font-semibold">{t("auth.resetTitle")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("auth.resetSubtitle")}</p>
 
-        <form onSubmit={submit} className="mt-6 space-y-3">
+        <form
+          className="mt-5 space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            toast.info(t("auth.backendRequired"));
+          }}
+        >
           <div className="space-y-1.5">
-            <Label htmlFor="password">Nova senha</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              disabled={!ready}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <Label htmlFor="new-password">{t("auth.newPassword")}</Label>
+            <Input id="new-password" type="password" disabled placeholder="••••••••" />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="confirmation">Confirme a nova senha</Label>
-            <Input
-              id="confirmation"
-              type="password"
-              required
-              minLength={6}
-              autoComplete="new-password"
-              disabled={!ready}
-              value={confirmation}
-              onChange={(e) => setConfirmation(e.target.value)}
-            />
+            <Label htmlFor="confirm-password">{t("auth.confirmPassword")}</Label>
+            <Input id="confirm-password" type="password" disabled placeholder="••••••••" />
           </div>
-          <Button className="w-full" disabled={!ready || loading}>
-            Salvar nova senha
+          <Button type="submit" className="w-full" disabled>
+            {t("auth.updatePassword")}
           </Button>
         </form>
 
-        <button
-          className="mt-5 w-full text-center text-sm text-muted-foreground hover:text-primary"
-          onClick={() => navigate({ to: "/auth" })}
+        <p className="mt-4 text-[11px] leading-relaxed text-muted-foreground">
+          {t("auth.backendRequired")}
+        </p>
+
+        <Link
+          to="/auth"
+          className="mt-5 block text-center text-sm text-muted-foreground hover:text-primary"
         >
-          Voltar para o login
-        </button>
+          {t("auth.haveAccount")}
+        </Link>
       </div>
     </div>
   );

@@ -1,143 +1,72 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { meQuery } from "@/lib/netclub";
-import { UserAvatar } from "@/components/netclub/UserAvatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Crown } from "lucide-react";
+import { useI18n } from "@/i18n";
+import {
+  collaborationsQuery,
+  connectionsQuery,
+  directoryQuery,
+  feedQuery,
+  meQuery,
+  recommendationsQuery,
+} from "@/data/queries";
+import { ProfileView } from "@/components/netclub/ProfileView";
+import { ProfileEditDialog } from "@/components/netclub/ProfileEditDialog";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
       { title: "Meu perfil — NetClub" },
       { name: "description", content: "Seu perfil profissional no NetClub." },
-      { property: "og:title", content: "Meu perfil — NetClub" },
-      { property: "og:description", content: "Seu perfil profissional no NetClub." },
     ],
   }),
-  loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(meQuery),
+  loader: async ({ context: { queryClient } }) => {
+    const me = await queryClient.ensureQueryData(meQuery);
+    if (!me) return null;
+    await Promise.all([
+      queryClient.ensureQueryData(feedQuery),
+      queryClient.ensureQueryData(connectionsQuery),
+      queryClient.ensureQueryData(directoryQuery),
+      queryClient.ensureQueryData(recommendationsQuery(me.id)),
+      queryClient.ensureQueryData(collaborationsQuery(me.id)),
+    ]);
+    return me;
+  },
   component: ProfilePage,
 });
 
 function ProfilePage() {
+  const { t } = useI18n();
   const { data: me } = useSuspenseQuery(meQuery);
-  const qc = useQueryClient();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    full_name: me.full_name,
-    headline: me.headline,
-    bio: me.bio,
-    skills: me.skills.join(", "),
-  });
+  const [editing, setEditing] = useState(false);
 
-  const save = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          full_name: form.full_name.trim(),
-          headline: form.headline.trim(),
-          bio: form.bio.trim(),
-          skills: form.skills
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-            .slice(0, 15),
-        })
-        .eq("id", me.id);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Perfil atualizado");
-      qc.invalidateQueries();
-    },
-    onError: () => toast.error("Não foi possível salvar"),
-  });
-
-  async function signOut() {
-    await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
+  if (!me) return null;
 
   return (
-    <div className="mx-auto max-w-xl px-4 pt-6 md:pt-10">
-      <div className="flex items-center gap-4">
-        <UserAvatar
-          name={me.full_name}
-          url={me.avatar_url}
-          className="h-20 w-20 border-2 border-primary/50 text-2xl"
-        />
-        <div>
-          <h1 className="text-2xl font-bold">{me.full_name}</h1>
-          <p className="text-sm text-muted-foreground">
-            {me.headline || "Adicione sua área de atuação"}
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-3xl px-4 py-5 md:px-6 md:py-8">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h1 className="text-2xl font-bold">{t("profile.title")}</h1>
+        <Link
+          to="/premium"
+          className="inline-flex items-center gap-1.5 rounded-full border border-gold/30 bg-gold/10 px-3 py-1 text-xs text-gold hover:bg-gold/15"
+        >
+          <Crown className="h-3.5 w-3.5" /> {t("premium.title")}
+        </Link>
       </div>
-      {me.skills.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
-          {me.skills.map((s) => (
-            <span
-              key={s}
-              className="rounded-full bg-accent px-3 py-1 text-xs text-accent-foreground"
-            >
-              {s}
-            </span>
-          ))}
-        </div>
+
+      {!me.onboarded && (
+        <Link
+          to="/onboarding"
+          className="mb-4 block rounded-xl border border-gold/35 bg-gold/10 p-3 text-xs text-gold hover:bg-gold/15"
+        >
+          {t("home.onboardingBody")} · {t("home.onboardingCta")}
+        </Link>
       )}
-      <form
-        className="surface mt-6 space-y-4 p-5"
-        onSubmit={(e) => {
-          e.preventDefault();
-          save.mutate();
-        }}
-      >
-        <div className="space-y-1.5">
-          <Label htmlFor="n">Nome</Label>
-          <Input
-            id="n"
-            required
-            value={form.full_name}
-            onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="h">Área de atuação</Label>
-          <Input
-            id="h"
-            value={form.headline}
-            onChange={(e) => setForm({ ...form, headline: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="b">Sobre você</Label>
-          <Textarea
-            id="b"
-            maxLength={600}
-            value={form.bio}
-            onChange={(e) => setForm({ ...form, bio: e.target.value })}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="s">Habilidades (separadas por vírgula)</Label>
-          <Input
-            id="s"
-            value={form.skills}
-            onChange={(e) => setForm({ ...form, skills: e.target.value })}
-          />
-        </div>
-        <Button disabled={save.isPending}>Salvar perfil</Button>
-      </form>
-      <Button variant="ghost" className="mt-4 text-muted-foreground" onClick={signOut}>
-        Sair da conta
-      </Button>
+
+      <ProfileView profile={me} me={me} onEdit={() => setEditing(true)} />
+
+      <ProfileEditDialog open={editing} onOpenChange={setEditing} profile={me} />
     </div>
   );
 }
