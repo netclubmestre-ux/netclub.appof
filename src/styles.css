@@ -94,7 +94,11 @@
   --sidebar-accent-foreground: oklch(0.97 0.002 200);
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.75 0.11 170);
-  --glow-primary: radial-gradient(60% 50% at 50% 100%, oklch(0.75 0.11 170 / 0.12), transparent 70%);
+  --glow-primary: radial-gradient(
+    60% 50% at 50% 100%,
+    oklch(0.75 0.11 170 / 0.12),
+    transparent 70%
+  );
   --shadow-card: 0 10px 30px -15px oklch(0 0 0 / 0.6);
 }
 
@@ -112,7 +116,10 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
   }
@@ -137,12 +144,20 @@
 }
 
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @keyframes orbit {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @utility orbit {
