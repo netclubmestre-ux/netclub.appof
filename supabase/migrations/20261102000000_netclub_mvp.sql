@@ -172,6 +172,39 @@ grant update (
 ) on public.profiles to authenticated;
 
 -- ---------------------------------------------------------------------------
+-- Bloqueios (precisa existir antes das policies de conexões)
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.blocks (
+  id uuid primary key default gen_random_uuid(),
+  blocker_id uuid not null references public.profiles(id) on delete cascade,
+  blocked_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  constraint blocks_not_self check (blocker_id <> blocked_id),
+  unique (blocker_id, blocked_id)
+);
+
+alter table public.blocks enable row level security;
+
+drop policy if exists "blocks own read" on public.blocks;
+create policy "blocks own read"
+  on public.blocks for select to authenticated
+  using (auth.uid() = blocker_id);
+
+drop policy if exists "blocks own insert" on public.blocks;
+create policy "blocks own insert"
+  on public.blocks for insert to authenticated
+  with check (auth.uid() = blocker_id);
+
+drop policy if exists "blocks own delete" on public.blocks;
+create policy "blocks own delete"
+  on public.blocks for delete to authenticated
+  using (auth.uid() = blocker_id);
+
+revoke all on public.blocks from anon, authenticated;
+grant select, insert, delete on public.blocks to authenticated;
+
+-- ---------------------------------------------------------------------------
 -- Configurações, assinatura e LGPD
 -- ---------------------------------------------------------------------------
 
@@ -984,35 +1017,6 @@ revoke all on public.reports from anon, authenticated;
 grant insert on public.reports to authenticated;
 grant select on public.reports to authenticated;
 grant update (status) on public.reports to authenticated;
-
-create table if not exists public.blocks (
-  id uuid primary key default gen_random_uuid(),
-  blocker_id uuid not null references public.profiles(id) on delete cascade,
-  blocked_id uuid not null references public.profiles(id) on delete cascade,
-  created_at timestamptz not null default now(),
-  constraint blocks_not_self check (blocker_id <> blocked_id),
-  unique (blocker_id, blocked_id)
-);
-
-alter table public.blocks enable row level security;
-
-drop policy if exists "blocks own read" on public.blocks;
-create policy "blocks own read"
-  on public.blocks for select to authenticated
-  using (auth.uid() = blocker_id);
-
-drop policy if exists "blocks own insert" on public.blocks;
-create policy "blocks own insert"
-  on public.blocks for insert to authenticated
-  with check (auth.uid() = blocker_id);
-
-drop policy if exists "blocks own delete" on public.blocks;
-create policy "blocks own delete"
-  on public.blocks for delete to authenticated
-  using (auth.uid() = blocker_id);
-
-revoke all on public.blocks from anon, authenticated;
-grant select, insert, delete on public.blocks to authenticated;
 
 -- ---------------------------------------------------------------------------
 -- NetMach
