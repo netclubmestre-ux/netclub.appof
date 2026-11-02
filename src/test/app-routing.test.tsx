@@ -10,12 +10,23 @@ const paths = [
   "/",
   "/auth",
   "/reset-password",
+  "/legal/terms",
+  "/legal/privacy",
+  "/legal/guidelines",
+  "/legal/contact",
+  "/onboarding",
   "/home",
   "/network",
+  "/netmach",
   "/clubs",
   "/chat",
   "/notifications",
   "/profile",
+  "/settings",
+  "/official",
+  "/premium",
+  "/promote",
+  "/search",
 ];
 
 function matches(path: string) {
@@ -28,10 +39,14 @@ describe("App routing", () => {
     expect(matches(path).at(-1)?.routeId).not.toBe(rootRouteId);
   });
 
-  it("matches a public member profile", () => {
-    const match = matches("/members/123e4567-e89b-12d3-a456-426614174000").at(-1);
+  it.each([
+    ["/members/123e4567-e89b-12d3-a456-426614174000", "/members/$id"],
+    ["/clubs/marketing", "/clubs/$slug"],
+    ["/chat/cv-1", "/chat/$id"],
+  ])("matches %s as %s", (path, fullPath) => {
+    const match = matches(path).at(-1);
     expect(match?.routeId).not.toBe(rootRouteId);
-    expect(match?.fullPath).toBe("/members/$id");
+    expect(match?.fullPath).toBe(fullPath);
   });
 
   it("does not treat an unknown path as an app route", () => {
