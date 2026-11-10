@@ -40,8 +40,13 @@ pelo Lovable Cloud apenas em runtime no servidor.
 
 ### Banco de dados
 
-O schema e as policies de RLS vivem em `drizzle/migrations/`. Leia
-[`drizzle/README.md`](drizzle/README.md) antes de rodar qualquer comando do Drizzle.
+O schema, as policies de RLS e a publication do Realtime vivem em
+`supabase/migrations/`. Aplique os arquivos na ordem e veja
+[`docs/supabase-setup.md`](docs/supabase-setup.md) para o passo a passo,
+incluindo o SQL necessário para habilitar o Realtime.
+
+O diretório `drizzle/` é legado: consulte
+[`drizzle/README.md`](drizzle/README.md) apenas se for mexer nele.
 
 ## Lovable
 

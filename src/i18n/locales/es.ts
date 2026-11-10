@@ -57,7 +57,7 @@ export const es = {
 
   "nav.home": "Inicio",
   "nav.network": "Red",
-  "nav.netmach": "NetMach",
+  "nav.netmach": "NetMatch",
   "nav.clubs": "Grupos",
   "nav.chat": "Chat",
   "nav.notifications": "Notificaciones",
@@ -89,6 +89,7 @@ export const es = {
     "Perfil profesional, matches de networking, grupos y contenido en un solo lugar. Sin ruido, sin promesas de resultados fáciles.",
   "landing.disclaimer":
     "NetClub no es una plataforma de inversión. El contenido del Canal Oficial es informativo y no constituye recomendación de inversión.",
+  "landing.coverAlt": "Portada oficial de NetClub",
 
   "auth.signIn": "Entrar",
   "auth.signUp": "Crear cuenta",
@@ -133,6 +134,9 @@ export const es = {
     "Enviamos un enlace de confirmación a {email}. Después de confirmar, vuelve e inicia sesión.",
   "auth.backendNote":
     "Tus datos se guardan en el backend de NetClub y están protegidos por RLS (Row Level Security).",
+  "auth.backendDownTitle": "Backend no disponible",
+  "auth.backendDownBody":
+    "No se pudo conectar con el proyecto Supabase configurado. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_PUBLISHABLE_KEY en .env y si el proyecto está activo.",
   "auth.sendResetLink": "Enviar enlace de recuperación",
   "auth.resetSent": "Enlace enviado.",
   "auth.passwordUpdated": "Contraseña actualizada. Ya tienes sesión iniciada.",
@@ -147,7 +151,7 @@ export const es = {
     "Si {email} tiene una cuenta, el enlace de recuperación llegará en breve. Revisa también el spam.",
 
   "onboarding.title": "Completa tu perfil profesional",
-  "onboarding.subtitle": "Esta información alimenta tus recomendaciones y NetMach.",
+  "onboarding.subtitle": "Esta información alimenta tus recomendaciones y NetMatch.",
   "onboarding.stepOf": "Paso {current} de {total}",
   "onboarding.basicTitle": "Datos básicos",
   "onboarding.basicBody": "Cómo quieres que te encuentren en NetClub.",
@@ -178,7 +182,7 @@ export const es = {
   "onboarding.required": "Completa los campos obligatorios.",
   "onboarding.selectOne": "Selecciona al menos una opción.",
   "onboarding.completeTitle": "Perfil listo",
-  "onboarding.completeBody": "Ahora puedes explorar NetMach, los grupos y el feed.",
+  "onboarding.completeBody": "Ahora puedes explorar NetMatch, los grupos y el feed.",
   "onboarding.goHome": "Ir al inicio",
   "onboarding.uploadNote":
     "JPG, PNG o WebP hasta 5 MB. La imagen se sube al almacenamiento de la app.",
@@ -248,6 +252,11 @@ export const es = {
   "home.saved": "Guardado",
   "home.sponsored": "Patrocinado",
   "home.newPosts": "{count} publicaciones nuevas",
+  "home.netmatchTitle": "NetMatch",
+  "home.netmatchBody":
+    "Conexiones profesionales con intereses complementarios: da me gusta, haz match y empieza una conversación.",
+  "home.netmatchCta": "Abrir NetMatch",
+  "home.netmatchRemaining": "{used} de {limit} perfiles hoy",
 
   "stories.title": "Stories",
   "stories.create": "Crear story",
@@ -274,7 +283,7 @@ export const es = {
   "stories.viewers": "Visualizaciones",
   "stories.deleted": "Story eliminado.",
 
-  "netmach.title": "NetMach",
+  "netmach.title": "NetMatch",
   "netmach.subtitle": "Encuentra profesionales con intereses complementarios.",
   "netmach.like": "Tengo interés",
   "netmach.pass": "Pasar",
@@ -294,7 +303,7 @@ export const es = {
   "netmach.experience": "Experiencia",
   "netmach.lookingFor": "Busca",
   "netmach.offering": "Ofrece",
-  "netmach.premiumTitle": "NetMach avanzado",
+  "netmach.premiumTitle": "NetMatch avanzado",
   "netmach.premiumBody": "Filtros por competencia, experiencia, objetivos y área profesional.",
   "netmach.premiumCta": "Conocer Premium",
   "netmach.filters": "Filtros avanzados",
@@ -461,13 +470,13 @@ export const es = {
   "official.allCategories": "Todas",
 
   "premium.title": "NetClub Premium",
-  "premium.subtitle": "Un NetMach más dirigido, sin bloquear el networking esencial.",
+  "premium.subtitle": "Un NetMatch más dirigido, sin bloquear el networking esencial.",
   "premium.currentPlan": "Tu plan",
   "premium.free": "Gratuito",
   "premium.premium": "Premium",
   "premium.perMonth": "por mes",
   "premium.benefitsTitle": "Qué incluye Premium",
-  "premium.benefit1Title": "NetMach avanzado",
+  "premium.benefit1Title": "NetMatch avanzado",
   "premium.benefit1Body": "Filtros por competencias, experiencia, objetivos y área profesional.",
   "premium.benefit2Title": "Búsquedas guardadas",
   "premium.benefit2Body": "Guarda, nombra y reutiliza tus búsquedas de profesionales.",
@@ -497,7 +506,7 @@ export const es = {
   "premium.statusNone": "Sin suscripción",
   "premium.filters": "Filtros",
   "premium.savedSearches": "Búsquedas guardadas",
-  "premium.netmachAdvanced": "NetMach avanzado",
+  "premium.netmachAdvanced": "NetMatch avanzado",
 
   "promote.title": "Impulsar contenido",
   "promote.subtitle": "Da más visibilidad a una publicación o story tuyo.",

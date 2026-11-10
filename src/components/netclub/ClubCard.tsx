@@ -32,7 +32,7 @@ export function ClubCard({ club, meId }: { club: Club; meId: string }) {
               src={club.coverUrl}
               alt=""
               loading="lazy"
-              className="h-full w-full object-cover opacity-80 transition-transform duration-300 hover:scale-105"
+              className="h-full w-full object-cover opacity-80"
             />
           ) : (
             <div className="h-full w-full bg-primary-deep" />

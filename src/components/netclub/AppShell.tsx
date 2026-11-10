@@ -18,6 +18,7 @@ import {
 import { useI18n } from "@/i18n";
 import { useDataMode, useRepository } from "@/data/provider";
 import { meQuery, notificationsQuery } from "@/data/queries";
+import { useRealtimeSync } from "@/data/realtime";
 import { Logo } from "./Logo";
 import { UserAvatar } from "./UserAvatar";
 import { LanguageSelect } from "./LanguageSelect";
@@ -55,6 +56,8 @@ export function AppShell() {
   const { data: me } = useQuery(meQuery);
   const { data: notifications = [] } = useQuery(notificationsQuery);
   const unread = notifications.filter((n) => !n.read).length;
+
+  useRealtimeSync();
 
   async function signOut() {
     await repository.signOut();

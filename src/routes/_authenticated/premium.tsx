@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/premium")({
   head: () => ({
     meta: [
       { title: "NetClub Premium" },
-      { name: "description", content: "NetMach avançado, pesquisas salvas e recursos Premium." },
+      { name: "description", content: "NetMatch avançado, pesquisas salvas e recursos Premium." },
     ],
   }),
   loader: ({ context: { queryClient } }) =>

@@ -13,6 +13,31 @@ function env(key: string): string | undefined {
   return values[key];
 }
 
+/** `true` quando URL e chave publishable estão presentes no bundle. */
+export function isSupabaseConfigured(): boolean {
+  return Boolean(env("VITE_SUPABASE_URL") && env("VITE_SUPABASE_PUBLISHABLE_KEY"));
+}
+
+/**
+ * Verifica se o projeto Supabase responde. Não usa o cliente autenticado para
+ * funcionar antes do login e não lança: retorna `false` em qualquer falha.
+ */
+export async function checkSupabaseHealth(signal?: AbortSignal): Promise<boolean> {
+  const url = env("VITE_SUPABASE_URL");
+  const key = env("VITE_SUPABASE_PUBLISHABLE_KEY");
+  if (!url || !key) return false;
+  try {
+    const response = await fetch(`${url.replace(/\/+$/, "")}/auth/v1/health`, {
+      headers: { apikey: key },
+      cache: "no-store",
+      signal: signal ?? null,
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 function createFetch(apiKey: string): typeof fetch {
   return (input, init) => {
     const headers = new Headers(input instanceof Request ? input.headers : undefined);

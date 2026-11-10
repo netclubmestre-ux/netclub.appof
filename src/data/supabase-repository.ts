@@ -324,12 +324,29 @@ function mapOfficialAnnouncement(row: Row): OfficialAnnouncement {
   };
 }
 
+function isNetworkFailure(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("failed to fetch") ||
+    lower.includes("fetch failed") ||
+    lower.includes("networkerror") ||
+    lower.includes("network error") ||
+    lower.includes("load failed") ||
+    lower.includes("connection refused") ||
+    lower.includes("enotfound") ||
+    lower.includes("err_name_not_resolved") ||
+    lower.includes("timed out")
+  );
+}
+
 function mapPostgrestError(
   error: { code?: string; message?: string; details?: string } | null,
 ): never {
   const message = error?.message ?? "";
   const code = error?.code ?? "";
   const lower = message.toLowerCase();
+
+  if (isNetworkFailure(message)) throw new RepositoryError("NETWORK", message);
 
   if (code === "23505" && (lower.includes("username") || lower.includes("profiles_username"))) {
     throw new RepositoryError("INVALID", "username_taken");
@@ -355,8 +372,17 @@ function mapPostgrestError(
   throw new RepositoryError("INVALID", message || "request_failed");
 }
 
-function mapAuthError(error: { message: string }): never {
+function mapAuthError(error: {
+  message: string;
+  status?: number | undefined;
+  name?: string | undefined;
+}): never {
   const message = error.message.toLowerCase();
+  // Status 0 / AuthRetryableFetchError acontece quando o host do Supabase está
+  // inacessível (projeto pausado, DNS, offline). Não é credencial inválida.
+  if (error.status === 0 || error.name === "AuthRetryableFetchError" || isNetworkFailure(message)) {
+    throw new RepositoryError("NETWORK", error.message);
+  }
   if (message.includes("invalid login credentials")) {
     throw new RepositoryError("INVALID_CREDENTIALS");
   }

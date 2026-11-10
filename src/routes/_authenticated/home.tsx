@@ -1,11 +1,18 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { ArrowRight, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, Handshake, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useRepository } from "@/data/provider";
-import { clubsQuery, connectionsQuery, feedQuery, meQuery, peopleQuery } from "@/data/queries";
+import {
+  clubsQuery,
+  connectionsQuery,
+  feedQuery,
+  matchStateQuery,
+  meQuery,
+  peopleQuery,
+} from "@/data/queries";
 import { connectionState } from "@/lib/netclub";
 import type { Profile } from "@/data/types";
 import { PostCard } from "@/components/netclub/PostCard";
@@ -14,6 +21,7 @@ import { UserAvatar } from "@/components/netclub/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import coverUrl from "@/assets/netclub-cover.jpg";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -31,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/home")({
       queryClient.ensureQueryData(clubsQuery),
       queryClient.ensureQueryData(peopleQuery),
       queryClient.ensureQueryData(connectionsQuery),
+      queryClient.ensureQueryData(matchStateQuery),
     ]),
   component: HomePage,
 });
@@ -43,13 +52,14 @@ function HomePage() {
 }
 
 function HomeContent({ me }: { me: Profile }) {
-  const { t } = useI18n();
+  const { t, formatNumber } = useI18n();
   const repository = useRepository();
   const queryClient = useQueryClient();
   const { data: feed = [] } = useSuspenseQuery(feedQuery);
   const { data: clubs = [] } = useSuspenseQuery(clubsQuery);
   const { data: people = [] } = useSuspenseQuery(peopleQuery);
   const { data: connections = [] } = useSuspenseQuery(connectionsQuery);
+  const { data: matchState } = useSuspenseQuery(matchStateQuery);
   const [draft, setDraft] = useState("");
 
   const publish = useMutation({
@@ -88,12 +98,24 @@ function HomeContent({ me }: { me: Profile }) {
     <div className="mx-auto w-full max-w-5xl px-4 pb-6 pt-4 md:px-6 md:pt-8">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6">
         <div className="min-w-0">
-          <header className="fade-up">
-            <p className="text-sm font-medium text-primary">{greeting}</p>
-            <h1 className="mt-1 text-[22px] font-bold leading-tight sm:text-2xl md:text-3xl">
-              {t("common.tagline")}
-            </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">{t("home.subtitle")}</p>
+          <header className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-primary-deep/45 via-card to-card p-4 fade-up sm:p-5">
+            <div className="flex items-center gap-4">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-primary">{greeting}</p>
+                <h1 className="mt-1 text-[22px] font-bold leading-tight sm:text-2xl md:text-3xl">
+                  {t("common.tagline")}
+                </h1>
+                <p className="mt-1.5 text-sm text-muted-foreground">{t("home.subtitle")}</p>
+              </div>
+              <img
+                src={coverUrl}
+                alt=""
+                aria-hidden
+                width={1024}
+                height={1024}
+                className="h-20 w-20 shrink-0 rounded-xl border border-primary/25 object-cover shadow-lg sm:h-24 sm:w-24"
+              />
+            </div>
           </header>
 
           {!me.onboarded && (
@@ -136,6 +158,30 @@ function HomeContent({ me }: { me: Profile }) {
                 onClick={() => publish.mutate()}
               >
                 {publish.isPending ? t("home.publishing") : t("home.publish")}
+              </Button>
+            </div>
+          </section>
+
+          <section className="surface mt-5 overflow-hidden border-primary/25">
+            <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary-deep text-primary">
+                <Handshake className="h-5 w-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-semibold">{t("home.netmatchTitle")}</h2>
+                <p className="mt-1 text-xs text-muted-foreground">{t("home.netmatchBody")}</p>
+                <p className="mt-1.5 text-[11px] font-medium text-primary">
+                  {t("home.netmatchRemaining", {
+                    used: formatNumber(matchState.usedToday),
+                    limit: formatNumber(matchState.dailyLimit),
+                  })}
+                </p>
+              </div>
+              <Button asChild size="sm" className="shrink-0">
+                <Link to="/netmach">
+                  {t("home.netmatchCta")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
               </Button>
             </div>
           </section>

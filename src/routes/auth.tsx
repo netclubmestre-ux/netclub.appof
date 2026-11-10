@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Info, MailCheck } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Info, MailCheck, WifiOff } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
 import { useDataMode, useRepository } from "@/data/provider";
 import { RepositoryError } from "@/data/repository";
+import { checkSupabaseHealth, isSupabaseConfigured } from "@/data/supabase-client";
 import { Logo } from "@/components/netclub/Logo";
 import { LanguageSelect } from "@/components/netclub/LanguageSelect";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,15 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmationEmail, setConfirmationEmail] = useState<string | null>(null);
+
+  const health = useQuery({
+    queryKey: ["backend-health"],
+    queryFn: ({ signal }) => checkSupabaseHealth(signal),
+    enabled: !isDemo && isSupabaseConfigured(),
+    retry: false,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
 
   function messageFor(error: unknown) {
     if (error instanceof RepositoryError) {
@@ -136,6 +146,25 @@ function AuthPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "in" ? t("auth.signInSubtitle") : t("auth.signUpSubtitle")}
           </p>
+
+          {!isDemo && health.data === false && (
+            <div className="mt-5 rounded-xl border border-destructive/40 bg-destructive/10 p-4">
+              <p className="flex items-center gap-2 text-sm font-semibold text-destructive">
+                <WifiOff className="h-4 w-4" /> {t("auth.backendDownTitle")}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                {t("auth.backendDownBody")}
+              </p>
+              <button
+                type="button"
+                onClick={() => void health.refetch()}
+                className="mt-2 text-xs font-semibold text-primary hover:underline"
+                disabled={health.isFetching}
+              >
+                {health.isFetching ? t("common.loading") : t("common.retry")}
+              </button>
+            </div>
+          )}
 
           {isDemo ? (
             <div className="mt-5 rounded-xl border border-primary/25 bg-primary-deep/25 p-4">

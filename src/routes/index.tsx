@@ -6,6 +6,7 @@ import { sessionQuery } from "@/data/queries";
 import { Logo } from "@/components/netclub/Logo";
 import { LanguageSelect } from "@/components/netclub/LanguageSelect";
 import { Button } from "@/components/ui/button";
+import coverUrl from "@/assets/netclub-cover.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -63,20 +64,39 @@ function Landing() {
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-12 fade-up md:py-16">
-        <p className="text-sm font-medium text-primary">{t("landing.eyebrow")}</p>
-        <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
-          {t("landing.heroTitle")} <span className="text-primary">{t("landing.heroAccent")}</span>
-        </h1>
-        <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-          {t("landing.heroSubtitle")}
-        </p>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Button asChild size="lg">
-            <Link to="/auth">{t("landing.ctaCreate")}</Link>
-          </Button>
-          <Button asChild size="lg" variant="secondary">
-            <Link to="/premium">{t("nav.premium")}</Link>
-          </Button>
+        <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.8fr)] md:gap-12">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-primary">{t("landing.eyebrow")}</p>
+            <h1 className="mt-3 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl md:text-6xl">
+              {t("landing.heroTitle")}{" "}
+              <span className="text-primary">{t("landing.heroAccent")}</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
+              {t("landing.heroSubtitle")}
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg">
+                <Link to="/auth">{t("landing.ctaCreate")}</Link>
+              </Button>
+              <Button asChild size="lg" variant="secondary">
+                <Link to="/premium">{t("nav.premium")}</Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-[19rem] sm:max-w-sm md:max-w-none">
+            <div
+              aria-hidden
+              className="absolute inset-4 -z-10 rounded-[2rem] bg-primary/25 blur-3xl"
+            />
+            <img
+              src={coverUrl}
+              alt={t("landing.coverAlt")}
+              width={1024}
+              height={1024}
+              className="aspect-square w-full rounded-[1.75rem] border border-primary/20 object-cover shadow-2xl"
+            />
+          </div>
         </div>
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 md:grid-cols-3">

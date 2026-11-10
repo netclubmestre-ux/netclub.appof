@@ -25,7 +25,7 @@ import {
 export const Route = createFileRoute("/_authenticated/netmach")({
   head: () => ({
     meta: [
-      { title: "NetMach — NetClub" },
+      { title: "NetMatch — NetClub" },
       { name: "description", content: "Encontre profissionais com interesses complementares." },
     ],
   }),

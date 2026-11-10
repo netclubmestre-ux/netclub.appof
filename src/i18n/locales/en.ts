@@ -57,7 +57,7 @@ export const en = {
 
   "nav.home": "Home",
   "nav.network": "Network",
-  "nav.netmach": "NetMach",
+  "nav.netmach": "NetMatch",
   "nav.clubs": "Groups",
   "nav.chat": "Chat",
   "nav.notifications": "Notifications",
@@ -89,6 +89,7 @@ export const en = {
     "Professional profile, networking matches, groups and content in one place. No noise, no promise of easy results.",
   "landing.disclaimer":
     "NetClub is not an investment platform. Official Channel content is informative and is not investment advice.",
+  "landing.coverAlt": "Official NetClub cover",
 
   "auth.signIn": "Sign in",
   "auth.signUp": "Create account",
@@ -133,6 +134,9 @@ export const en = {
     "We sent a confirmation link to {email}. After confirming, come back and sign in.",
   "auth.backendNote":
     "Your data is stored in the NetClub backend and protected by RLS (Row Level Security).",
+  "auth.backendDownTitle": "Backend unavailable",
+  "auth.backendDownBody":
+    "Could not reach the configured Supabase project. Check VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in .env and whether the project is active.",
   "auth.sendResetLink": "Send recovery link",
   "auth.resetSent": "Link sent.",
   "auth.passwordUpdated": "Password updated. You are signed in.",
@@ -146,7 +150,7 @@ export const en = {
     "If {email} has an account, the recovery link will arrive shortly. Check your spam folder too.",
 
   "onboarding.title": "Complete your professional profile",
-  "onboarding.subtitle": "This information powers your recommendations and NetMach.",
+  "onboarding.subtitle": "This information powers your recommendations and NetMatch.",
   "onboarding.stepOf": "Step {current} of {total}",
   "onboarding.basicTitle": "Basic details",
   "onboarding.basicBody": "How you want to be found on NetClub.",
@@ -177,7 +181,7 @@ export const en = {
   "onboarding.required": "Fill in the required fields.",
   "onboarding.selectOne": "Select at least one option.",
   "onboarding.completeTitle": "Profile ready",
-  "onboarding.completeBody": "You can now explore NetMach, groups and the feed.",
+  "onboarding.completeBody": "You can now explore NetMatch, groups and the feed.",
   "onboarding.goHome": "Go to home",
   "onboarding.uploadNote": "JPG, PNG or WebP up to 5 MB. The image is uploaded to the app storage.",
   "onboarding.usernameTaken": "This username is already taken.",
@@ -246,6 +250,11 @@ export const en = {
   "home.saved": "Saved",
   "home.sponsored": "Sponsored",
   "home.newPosts": "{count} new posts",
+  "home.netmatchTitle": "NetMatch",
+  "home.netmatchBody":
+    "Professional connections with complementary interests: like, match and start a conversation.",
+  "home.netmatchCta": "Open NetMatch",
+  "home.netmatchRemaining": "{used} of {limit} profiles today",
 
   "stories.title": "Stories",
   "stories.create": "Create story",
@@ -271,7 +280,7 @@ export const en = {
   "stories.viewers": "Views",
   "stories.deleted": "Story deleted.",
 
-  "netmach.title": "NetMach",
+  "netmach.title": "NetMatch",
   "netmach.subtitle": "Find professionals with complementary interests.",
   "netmach.like": "I'm interested",
   "netmach.pass": "Pass",
@@ -291,7 +300,7 @@ export const en = {
   "netmach.experience": "Experience",
   "netmach.lookingFor": "Looking for",
   "netmach.offering": "Offering",
-  "netmach.premiumTitle": "Advanced NetMach",
+  "netmach.premiumTitle": "Advanced NetMatch",
   "netmach.premiumBody": "Filters by skill, experience, goals and professional area.",
   "netmach.premiumCta": "Discover Premium",
   "netmach.filters": "Advanced filters",
@@ -457,13 +466,13 @@ export const en = {
   "official.allCategories": "All",
 
   "premium.title": "NetClub Premium",
-  "premium.subtitle": "A more targeted NetMach, without blocking essential networking.",
+  "premium.subtitle": "A more targeted NetMatch, without blocking essential networking.",
   "premium.currentPlan": "Your plan",
   "premium.free": "Free",
   "premium.premium": "Premium",
   "premium.perMonth": "per month",
   "premium.benefitsTitle": "What Premium includes",
-  "premium.benefit1Title": "Advanced NetMach",
+  "premium.benefit1Title": "Advanced NetMatch",
   "premium.benefit1Body": "Filters by skills, experience, goals and professional area.",
   "premium.benefit2Title": "Saved searches",
   "premium.benefit2Body": "Save, name and reuse your professional searches.",
@@ -493,7 +502,7 @@ export const en = {
   "premium.statusNone": "No subscription",
   "premium.filters": "Filters",
   "premium.savedSearches": "Saved searches",
-  "premium.netmachAdvanced": "Advanced NetMach",
+  "premium.netmachAdvanced": "Advanced NetMatch",
 
   "promote.title": "Boost content",
   "promote.subtitle": "Give more visibility to one of your posts or stories.",
