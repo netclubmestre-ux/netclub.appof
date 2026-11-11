@@ -21,7 +21,7 @@ import { UserAvatar } from "@/components/netclub/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import coverUrl from "@/assets/netclub-cover.jpg";
+import markUrl from "@/assets/netclub-mark.png";
 
 export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
@@ -108,12 +108,12 @@ function HomeContent({ me }: { me: Profile }) {
                 <p className="mt-1.5 text-sm text-muted-foreground">{t("home.subtitle")}</p>
               </div>
               <img
-                src={coverUrl}
+                src={markUrl}
                 alt=""
                 aria-hidden
-                width={1024}
-                height={1024}
-                className="h-20 w-20 shrink-0 rounded-xl border border-primary/25 object-cover shadow-lg sm:h-24 sm:w-24"
+                width={534}
+                height={289}
+                className="h-12 w-24 shrink-0 object-contain sm:h-14 sm:w-28"
               />
             </div>
           </header>
