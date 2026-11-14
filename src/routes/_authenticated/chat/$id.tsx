@@ -4,11 +4,12 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 import { ArrowLeft, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "@/i18n";
-import { useRepository } from "@/data/provider";
+import { useDataMode, useRepository } from "@/data/provider";
 import {
   connectionsQuery,
   conversationsQuery,
   directoryQuery,
+  matchStateQuery,
   meQuery,
   messagesQuery,
 } from "@/data/queries";
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/chat/$id")({
       queryClient.ensureQueryData(messagesQuery(params.id)),
       queryClient.ensureQueryData(directoryQuery),
       queryClient.ensureQueryData(connectionsQuery),
+      queryClient.ensureQueryData(matchStateQuery),
     ]);
     return null;
   },
@@ -38,6 +40,7 @@ export const Route = createFileRoute("/_authenticated/chat/$id")({
 function ConversationPage() {
   const { t, formatDate, formatRelative } = useI18n();
   const repository = useRepository();
+  const { isDemo } = useDataMode();
   const queryClient = useQueryClient();
   const { id } = Route.useParams();
   const { data: me } = useSuspenseQuery(meQuery);
@@ -45,6 +48,7 @@ function ConversationPage() {
   const { data: directory = [] } = useSuspenseQuery(directoryQuery);
   const { data: conversations = [] } = useSuspenseQuery(conversationsQuery);
   const { data: connections = [] } = useSuspenseQuery(connectionsQuery);
+  const { data: matchState } = useSuspenseQuery(matchStateQuery);
   const [draft, setDraft] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -79,6 +83,10 @@ function ConversationPage() {
       ((connection.requesterId === me.id && connection.addresseeId === otherId) ||
         (connection.addresseeId === me.id && connection.requesterId === otherId)),
   );
+  // Match recíproco no NetMatch também libera a conversa privada, mesmo antes
+  // de a conexão profissional ser registrada pela migração mais recente.
+  const matched = (matchState?.matches ?? []).some((profile) => profile.id === otherId);
+  const canChat = connected || matched;
 
   let lastDay = "";
 
@@ -160,7 +168,7 @@ function ConversationPage() {
         <div ref={bottomRef} />
       </div>
 
-      {connected ? (
+      {canChat ? (
         <form
           className="flex items-center gap-2 border-t pt-3"
           onSubmit={(event) => {
@@ -185,7 +193,9 @@ function ConversationPage() {
           {t("profile.messageUnavailable")}
         </p>
       )}
-      <p className="mt-1 text-center text-[10px] text-muted-foreground">{t("chat.demoNote")}</p>
+      <p className="mt-1 text-center text-[10px] text-muted-foreground">
+        {isDemo ? t("chat.demoNote") : t("chat.matchNote")}
+      </p>
     </div>
   );
 }

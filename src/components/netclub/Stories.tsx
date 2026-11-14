@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, Flag, ImagePlus, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -46,71 +46,105 @@ function useStoryGroups() {
 }
 
 export function Stories({ me }: { me: Profile }) {
-  const { t, formatRelative } = useI18n();
+  const { t } = useI18n();
   const queryClient = useQueryClient();
   const groups = useStoryGroups();
   const { data: people = [] } = useQuery(directoryQuery);
-  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
+  const [viewer, setViewer] = useState<{ authorId: string; index: number } | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [reporting, setReporting] = useState<Story | null>(null);
 
-  const flat = useMemo(() => Array.from(groups.values()).flat(), [groups]);
+  const ownStories = useMemo(() => groups.get(me.id) ?? [], [groups, me.id]);
 
-  const authorIds = useMemo(() => {
-    const ids = Array.from(groups.keys());
-    return ids.sort((a, b) => {
-      if (a === me.id) return -1;
-      if (b === me.id) return 1;
-      const aLast = groups.get(a)?.at(-1)?.createdAt ?? "";
-      const bLast = groups.get(b)?.at(-1)?.createdAt ?? "";
-      return Date.parse(bLast) - Date.parse(aLast);
-    });
+  const otherAuthorIds = useMemo(() => {
+    return Array.from(groups.keys())
+      .filter((authorId) => authorId !== me.id)
+      .sort((a, b) => {
+        const aLast = groups.get(a)?.at(-1)?.createdAt ?? "";
+        const bLast = groups.get(b)?.at(-1)?.createdAt ?? "";
+        return Date.parse(bLast) - Date.parse(aLast);
+      });
   }, [groups, me.id]);
 
   const person = (id: string) => people.find((p) => p.id === id);
 
+  const viewerStories = viewer ? (groups.get(viewer.authorId) ?? []) : [];
+  const activeViewer =
+    viewer && viewer.index < viewerStories.length ? { ...viewer, stories: viewerStories } : null;
+
   return (
     <section aria-label={t("stories.title")}>
       <div className="no-scrollbar flex gap-3 overflow-x-auto pb-1">
-        <button
-          type="button"
-          onClick={() => setComposerOpen(true)}
-          className="flex w-20 shrink-0 flex-col items-center gap-1.5"
-        >
-          <span className="relative flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-primary/50 bg-primary-deep/40 text-primary">
-            <Plus className="h-6 w-6" />
-            {me.avatarUrl ? (
-              <UserAvatar
-                name={me.fullName}
-                url={me.avatarUrl}
-                className="absolute inset-0 h-full w-full opacity-40"
-              />
-            ) : null}
-          </span>
-          <span className="w-full truncate text-center text-[11px] text-muted-foreground">
-            {t("home.yourStory")}
-          </span>
-        </button>
+        {/* Meu Story: exclusivamente os stories do usuário autenticado. */}
+        <div className="relative w-20 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (ownStories.length > 0) setViewer({ authorId: me.id, index: 0 });
+              else setComposerOpen(true);
+            }}
+            className="flex w-full flex-col items-center gap-1.5"
+            aria-label={ownStories.length > 0 ? t("stories.viewOwn") : t("stories.add")}
+          >
+            {ownStories.length > 0 ? (
+              <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-primary to-primary/50 p-0.5">
+                <UserAvatar
+                  name={me.fullName}
+                  url={me.avatarUrl}
+                  className="h-full w-full border-2 border-background"
+                />
+              </span>
+            ) : (
+              <span className="relative flex h-16 w-16 items-center justify-center rounded-full border border-dashed border-primary/50 bg-primary-deep/40 text-primary">
+                <Plus className="h-6 w-6" />
+                {me.avatarUrl ? (
+                  <UserAvatar
+                    name={me.fullName}
+                    url={me.avatarUrl}
+                    className="absolute inset-0 h-full w-full opacity-40"
+                  />
+                ) : null}
+              </span>
+            )}
+            <span className="w-full truncate text-center text-[11px] font-medium text-foreground">
+              {t("stories.mine")}
+            </span>
+            <span className="w-full truncate text-center text-[10px] text-muted-foreground">
+              {ownStories.length > 0 ? t("stories.viewOwn") : t("stories.add")}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setComposerOpen(true)}
+            aria-label={t("stories.add")}
+            title={t("stories.add")}
+            className="absolute bottom-8 right-0 flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-primary text-primary-foreground shadow transition-transform hover:scale-105"
+          >
+            <Plus className="h-3.5 w-3.5" />
+          </button>
+        </div>
 
-        {authorIds.map((authorId) => {
+        {/* Stories de outras pessoas: agrupados pelo autor real. */}
+        {otherAuthorIds.map((authorId) => {
           const stories = groups.get(authorId) ?? [];
           const latest = stories.at(-1);
           if (!latest) return null;
           const profile = person(authorId);
-          const allViewed = stories.every((s) => s.viewedBy.includes(me.id));
-          const firstIndex = flat.findIndex((s) => s.id === stories[0]?.id);
+          const unseen = stories.some((story) => !story.viewedBy.includes(me.id));
           return (
             <button
               key={authorId}
               type="button"
-              onClick={() => setViewerIndex(firstIndex)}
+              onClick={() => setViewer({ authorId, index: 0 })}
               className="flex w-20 shrink-0 flex-col items-center gap-1.5"
               aria-label={t("stories.by", { name: profile?.fullName ?? "" })}
             >
               <span
                 className={cn(
-                  "flex h-16 w-16 items-center justify-center rounded-full p-0.5",
-                  allViewed ? "bg-border" : "bg-gradient-to-tr from-primary to-gold",
+                  "relative flex h-16 w-16 items-center justify-center rounded-full p-0.5",
+                  unseen
+                    ? "bg-gradient-to-tr from-primary to-gold"
+                    : "bg-border/80 ring-1 ring-inset ring-border",
                 )}
               >
                 <UserAvatar
@@ -118,25 +152,36 @@ export function Stories({ me }: { me: Profile }) {
                   url={profile?.avatarUrl}
                   className="h-full w-full border-2 border-background"
                 />
+                {unseen && (
+                  <span
+                    className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-background bg-primary"
+                    aria-hidden
+                  />
+                )}
               </span>
               <span className="w-full truncate text-center text-[11px] text-muted-foreground">
-                {authorId === me.id ? t("stories.yours") : profile?.fullName}
+                {profile?.fullName}
               </span>
-              <span className="text-[10px] text-muted-foreground/70">
-                {formatRelative(latest.createdAt)}
+              <span
+                className={cn(
+                  "text-[10px]",
+                  unseen ? "font-medium text-primary" : "text-muted-foreground/70",
+                )}
+              >
+                {unseen ? t("stories.new") : t("stories.seen")}
               </span>
             </button>
           );
         })}
       </div>
 
-      {viewerIndex !== null && flat[viewerIndex] && (
+      {activeViewer && (
         <StoryViewer
-          stories={flat}
-          index={viewerIndex}
+          stories={activeViewer.stories}
+          index={activeViewer.index}
           meId={me.id}
-          onIndexChange={setViewerIndex}
-          onClose={() => setViewerIndex(null)}
+          onIndexChange={(index) => setViewer({ authorId: activeViewer.authorId, index })}
+          onClose={() => setViewer(null)}
           onReport={(story) => setReporting(story)}
           person={person}
         />
@@ -155,8 +200,8 @@ export function Stories({ me }: { me: Profile }) {
         targetId={reporting?.id ?? ""}
       />
 
-      {flat.length === 0 && (
-        <p className="mt-2 text-xs text-muted-foreground">{t("stories.empty")}</p>
+      {ownStories.length === 0 && otherAuthorIds.length === 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">{t("stories.mineEmpty")}</p>
       )}
     </section>
   );
@@ -184,11 +229,25 @@ function StoryViewer({
   const queryClient = useQueryClient();
   const story = stories[index];
   const author = story ? person(story.authorId) : undefined;
+  const marked = useRef(new Set<string>());
 
+  // Registra a visualização somente quando o conteúdo está aberto e ainda
+  // não foi visto por este usuário. A invalidação atualiza os anéis na lista.
   useEffect(() => {
     if (!story) return;
-    repository.markStoryViewed(story.id).catch(() => undefined);
-  }, [repository, story]);
+    if (story.authorId === meId) return;
+    if (story.viewedBy.includes(meId)) return;
+    if (marked.current.has(story.id)) return;
+    marked.current.add(story.id);
+    repository
+      .markStoryViewed(story.id)
+      .then(() => queryClient.invalidateQueries({ queryKey: ["stories"] }))
+      .catch(() => marked.current.delete(story.id));
+  }, [repository, queryClient, story, meId]);
+
+  useEffect(() => {
+    if (index >= stories.length) onClose();
+  }, [index, stories.length, onClose]);
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -205,8 +264,6 @@ function StoryViewer({
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["stories"] });
       toast.success(t("stories.deleted"));
-      if (index >= stories.length - 1) onClose();
-      else onIndexChange(index);
     },
     onError: () => toast.error(t("errors.forbidden")),
   });
@@ -214,6 +271,7 @@ function StoryViewer({
   if (!story) return null;
   const mine = story.authorId === meId;
   const hoursLeft = Math.max(0, Math.round((Date.parse(story.expiresAt) - Date.now()) / 3600_000));
+  const viewerCount = story.viewedBy.filter((id) => id !== story.authorId).length;
 
   return (
     <div
@@ -254,7 +312,8 @@ function StoryViewer({
             <button
               type="button"
               onClick={() => remove.mutate()}
-              className="rounded-full p-2 text-white/80 hover:text-white"
+              disabled={remove.isPending}
+              className="rounded-full p-2 text-white/80 hover:text-white disabled:opacity-50"
               aria-label={t("stories.delete")}
             >
               <Trash2 className="h-4 w-4" />
@@ -288,7 +347,7 @@ function StoryViewer({
 
         {mine && (
           <p className="relative z-10 px-4 pb-3 text-center text-[11px] text-white/70">
-            {t("stories.viewed", { count: story.viewedBy.length })}
+            {t("stories.viewedCount", { count: viewerCount })}
           </p>
         )}
 

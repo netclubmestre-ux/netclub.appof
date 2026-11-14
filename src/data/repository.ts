@@ -17,6 +17,7 @@ import type {
   Notification,
   OfficialAnnouncement,
   Post,
+  PostCategory,
   Profile,
   Promotion,
   PromotionTarget,
@@ -74,7 +75,17 @@ export interface SignUpResult {
   needsConfirmation: boolean;
 }
 
-export type UploadKind = "avatar" | "portfolio" | "story";
+export type UploadKind = "avatar" | "portfolio" | "story" | "post";
+
+export interface PostMediaInput {
+  type: "image" | "video";
+  url: string;
+}
+
+export interface CreatePostOptions {
+  category?: PostCategory | null;
+  media?: PostMediaInput[];
+}
 
 export interface OnboardingInput {
   fullName: string;
@@ -167,10 +178,12 @@ export interface NetclubRepository {
   updateProfile(input: ProfileUpdateInput): Promise<void>;
   /** Envia uma imagem para o Storage e devolve a URL pública. */
   uploadImage(file: File, kind: UploadKind): Promise<string>;
+  /** Envia imagem ou vídeo para o Storage e devolve a URL pública. */
+  uploadMedia(file: File, kind: UploadKind): Promise<string>;
 
   // Feed
   getFeed(): Promise<Post[]>;
-  createPost(content: string, clubId?: string | null): Promise<void>;
+  createPost(content: string, clubId?: string | null, options?: CreatePostOptions): Promise<void>;
   updatePost(id: string, content: string): Promise<void>;
   deletePost(id: string): Promise<void>;
   toggleLike(postId: string): Promise<void>;

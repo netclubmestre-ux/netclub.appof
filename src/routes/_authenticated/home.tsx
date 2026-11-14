@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowRight, Handshake, Plus, Sparkles, TrendingUp, Users } from "lucide-react";
@@ -16,10 +15,10 @@ import {
 import { connectionState } from "@/lib/netclub";
 import type { Profile } from "@/data/types";
 import { PostCard } from "@/components/netclub/PostCard";
+import { PostComposer } from "@/components/netclub/PostComposer";
 import { Stories } from "@/components/netclub/Stories";
 import { UserAvatar } from "@/components/netclub/UserAvatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import markUrl from "@/assets/netclub-mark.png";
 
@@ -60,17 +59,6 @@ function HomeContent({ me }: { me: Profile }) {
   const { data: people = [] } = useSuspenseQuery(peopleQuery);
   const { data: connections = [] } = useSuspenseQuery(connectionsQuery);
   const { data: matchState } = useSuspenseQuery(matchStateQuery);
-  const [draft, setDraft] = useState("");
-
-  const publish = useMutation({
-    mutationFn: () => repository.createPost(draft),
-    onSuccess: () => {
-      setDraft("");
-      void queryClient.invalidateQueries({ queryKey: ["feed"] });
-      toast.success(t("common.success"));
-    },
-    onError: () => toast.error(t("errors.generic")),
-  });
 
   const connect = useMutation({
     mutationFn: (id: string) => repository.sendConnectionRequest(id),
@@ -138,29 +126,7 @@ function HomeContent({ me }: { me: Profile }) {
             <Stories me={me} />
           </div>
 
-          <section className="surface mt-5 p-4">
-            <div className="flex gap-3">
-              <UserAvatar name={me.fullName} url={me.avatarUrl} className="h-10 w-10" />
-              <Textarea
-                value={draft}
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder={t("home.composerPlaceholder")}
-                aria-label={t("home.composerPlaceholder")}
-                className="min-h-[70px] resize-none border-0 bg-transparent p-0 focus-visible:ring-0"
-                maxLength={3000}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between gap-2">
-              <span className="text-[11px] text-muted-foreground">{draft.length}/3000</span>
-              <Button
-                size="sm"
-                disabled={!draft.trim() || publish.isPending}
-                onClick={() => publish.mutate()}
-              >
-                {publish.isPending ? t("home.publishing") : t("home.publish")}
-              </Button>
-            </div>
-          </section>
+          <PostComposer me={me} />
 
           <section className="surface mt-5 overflow-hidden border-primary/25">
             <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">

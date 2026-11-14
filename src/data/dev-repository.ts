@@ -11,6 +11,7 @@ import {
   type MatchState,
   type NetclubRepository,
   type OnboardingInput,
+  type PostMediaInput,
   type ProfileUpdateInput,
   type PromotionInput,
   type ReportInput,
@@ -37,6 +38,7 @@ import {
   type Notification,
   type OfficialAnnouncement,
   type Post,
+  type PostCategory,
   type Profile,
   type Promotion,
   type Recommendation,
@@ -237,6 +239,10 @@ export class DevRepository implements NetclubRepository {
     return URL.createObjectURL(file);
   }
 
+  async uploadMedia(file: File, kind: UploadKind): Promise<string> {
+    return this.uploadImage(file, kind);
+  }
+
   // ---------------------------------------------------------------- feed
 
   async getFeed() {
@@ -248,18 +254,31 @@ export class DevRepository implements NetclubRepository {
       .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   }
 
-  async createPost(content: string, clubId?: string | null) {
+  async createPost(
+    content: string,
+    clubId?: string | null,
+    options?: { category?: PostCategory | null; media?: PostMediaInput[] },
+  ) {
     const me = this.requireUser();
     const clean = content.trim();
     if (!clean) throw new RepositoryError("INVALID", "empty");
+    const postId = newId();
     this.db.posts.unshift({
-      id: newId(),
+      id: postId,
       authorId: me,
       content: clean,
       createdAt: iso(),
       likedBy: [],
       savedBy: [],
       clubId: clubId ?? null,
+      category: options?.category ?? null,
+      media: (options?.media ?? []).map((item, index) => ({
+        id: newId(),
+        postId,
+        type: item.type,
+        url: item.url,
+        position: index,
+      })),
     });
   }
 
@@ -431,6 +450,22 @@ export class DevRepository implements NetclubRepository {
     }
     const matched = this.db.matchInterests.some((m) => m.fromId === targetId && m.toId === me);
     if (matched) {
+      const existing = this.db.connections.find(
+        (c) =>
+          (c.requesterId === me && c.addresseeId === targetId) ||
+          (c.requesterId === targetId && c.addresseeId === me),
+      );
+      if (!existing) {
+        this.db.connections.push({
+          id: newId(),
+          requesterId: me,
+          addresseeId: targetId,
+          status: "accepted",
+          createdAt: iso(),
+        });
+      } else if (existing.status !== "accepted") {
+        existing.status = "accepted";
+      }
       this.notify({ userId: targetId, actorId: me, kind: "match", entityId: targetId });
       this.notify({ userId: me, actorId: targetId, kind: "match", entityId: targetId });
     }

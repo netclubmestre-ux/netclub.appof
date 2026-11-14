@@ -24,6 +24,7 @@ Aplique os arquivos de `supabase/migrations/` **na ordem**:
 | `20261102000000_netclub_mvp.sql` | schema, RLS, grants, triggers |
 | `20261102001000_netclub_hardening.sql` | reforço de policies e integridade |
 | `20261110000000_netclub_realtime.sql` | publication do Realtime |
+| `20261113000000_netclub_evolution.sql` | mídia/categoria do feed, bucket `posts` e conexão automática de match |
 
 Via CLI:
 
@@ -90,7 +91,25 @@ consultas ativas a cada 20 s (somente com a aba visível e online). Isso mantém
 as telas atualizadas entre usuários, mas com latência de até 20 s. Com o SQL
 acima aplicado, as mudanças passam a chegar em tempo real.
 
-## 3. Verificação rápida
+## 3. Mídia do feed
+
+A migration `20261113000000_netclub_evolution.sql` cria:
+
+- `public.posts.category` (categoria opcional da publicação);
+- `public.post_media` (fotos/vídeos com RLS: leitura para membros, escrita
+  apenas pelo autor da publicação);
+- bucket `posts` no Storage, com escrita restrita à pasta `<uid>/`.
+
+Sem essa migration, o feed continua funcionando apenas com texto: a leitura
+faz fallback para as colunas antigas e o envio de mídia retorna um erro claro
+em vez de gravar uma publicação incompleta.
+
+A mesma migration cria a função `public.confirm_match(uuid)` e o trigger
+`trg_link_match_connection`: quando dois interesses mútuos existem, a conexão
+profissional é gravada como `accepted` sem duplicar pares. As notificações de
+match continuam vindo do trigger `notify_match`.
+
+## 4. Verificação rápida
 
 1. Crie duas contas e publique com uma delas.
 2. Abra o feed com a outra: a publicação deve aparecer sem recarregar.
@@ -100,7 +119,7 @@ acima aplicado, as mudanças passam a chegar em tempo real.
 4. Confirme que um usuário **não** consegue alterar o perfil de outro
    (`PATCH /rest/v1/profiles?id=eq.<outro>` retorna 0 linhas).
 
-## 4. Segurança
+## 5. Segurança
 
 - RLS habilitada em todas as tabelas de domínio.
 - `anon` sem acesso às tabelas; `authenticated` recebe apenas os grants

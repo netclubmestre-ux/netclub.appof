@@ -40,8 +40,8 @@ const NAV: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = [
 
 const MOBILE_NAV: { to: string; labelKey: TranslationKey; icon: typeof Home }[] = [
   { to: "/home", labelKey: "nav.home", icon: Home },
-  { to: "/netmach", labelKey: "nav.netmach", icon: Handshake },
   { to: "/clubs", labelKey: "nav.clubs", icon: LayoutGrid },
+  { to: "/netmach", labelKey: "nav.netmach", icon: Handshake },
   { to: "/chat", labelKey: "nav.chat", icon: MessageCircle },
   { to: "/profile", labelKey: "nav.profile", icon: User },
 ];
@@ -67,13 +67,14 @@ export function AppShell() {
 
   return (
     <div className="mx-auto flex min-h-screen w-full max-w-6xl">
-      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r px-4 py-6 md:flex">
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r px-4 py-6 lg:flex">
         <Link to="/home" className="mb-5 px-3">
           <Logo />
         </Link>
         <nav className="flex flex-col gap-0.5">
           {NAV.map(({ to, labelKey, icon: Icon }) => {
             const active = pathname.startsWith(to);
+            const isNetmach = to === "/netmach";
             return (
               <Link
                 key={to}
@@ -81,10 +82,17 @@ export function AppShell() {
                 className={cn(
                   "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
                   active && "bg-accent text-accent-foreground",
+                  isNetmach && !active && "text-primary/90",
+                  isNetmach &&
+                    active &&
+                    "bg-primary/10 text-primary ring-1 ring-inset ring-primary/25",
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className={cn("h-5 w-5", isNetmach && "text-primary")} />
                 <span className="flex-1">{t(labelKey)}</span>
+                {isNetmach && (
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden />
+                )}
                 {to === "/notifications" && unread > 0 && (
                   <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
                     {unread}
@@ -130,17 +138,17 @@ export function AppShell() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center gap-2 border-b bg-background/90 px-3 py-2.5 backdrop-blur md:px-6">
-          <Link to="/home" className="shrink-0 md:hidden">
+          <Link to="/home" className="shrink-0 lg:hidden">
             <Logo className="h-6" />
           </Link>
           <Link
             to="/search"
-            className="ml-auto flex min-w-0 flex-1 items-center gap-2 rounded-full border bg-surface-2/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground md:ml-0 md:max-w-sm"
+            className="ml-auto flex min-w-0 flex-1 items-center gap-2 rounded-full border bg-surface-2/60 px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground lg:ml-0 lg:max-w-sm"
             aria-label={t("search.title")}
           >
             <Search className="h-4 w-4 shrink-0" />
-            <span className="truncate md:hidden">{t("search.title")}</span>
-            <span className="hidden min-w-0 truncate md:inline">{t("search.placeholder")}</span>
+            <span className="truncate lg:hidden">{t("search.title")}</span>
+            <span className="hidden min-w-0 truncate lg:inline">{t("search.placeholder")}</span>
           </Link>
           <Link
             to="/notifications"
@@ -156,7 +164,7 @@ export function AppShell() {
             <LanguageSelect className="h-8 w-full text-xs" />
           </div>
           {me && (
-            <Link to="/profile" className="shrink-0 md:hidden" aria-label={t("nav.profile")}>
+            <Link to="/profile" className="shrink-0 lg:hidden" aria-label={t("nav.profile")}>
               <UserAvatar name={me.fullName} url={me.avatarUrl} className="h-8 w-8" />
             </Link>
           )}
@@ -172,18 +180,63 @@ export function AppShell() {
           </div>
         )}
 
-        <main className="min-w-0 flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-10">
+        <main className="min-w-0 flex-1 pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10">
           <Outlet />
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav
+        aria-label={t("nav.home")}
+        className="fixed inset-x-0 bottom-0 z-40 flex items-stretch border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden"
+      >
         {MOBILE_NAV.map(({ to, labelKey, icon: Icon }) => {
           const active = pathname.startsWith(to);
+          const isNetmach = to === "/netmach";
+
+          if (isNetmach) {
+            return (
+              <Link
+                key={to}
+                to={to}
+                aria-current={active ? "page" : undefined}
+                className="group relative flex flex-1 flex-col items-center justify-end gap-0.5 pb-1.5 pt-1 text-[11px]"
+              >
+                <span
+                  className={cn(
+                    "relative -mt-5 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-deep text-primary-foreground shadow-[0_8px_20px_-6px_rgba(16,185,129,0.6)] ring-4 ring-background transition-transform duration-300 ease-out",
+                    active ? "scale-110 netmach-pop" : "group-hover:scale-105",
+                  )}
+                >
+                  <span
+                    className="absolute inset-0 rounded-full bg-primary/30 blur-md"
+                    aria-hidden
+                  />
+                  <Icon className="relative h-5 w-5" strokeWidth={2.2} />
+                </span>
+                <span
+                  className={cn(
+                    "font-semibold transition-colors",
+                    active ? "text-primary" : "text-muted-foreground",
+                  )}
+                >
+                  {t(labelKey)}
+                </span>
+                <span
+                  className={cn(
+                    "h-0.5 w-6 rounded-full transition-colors",
+                    active ? "bg-primary" : "bg-transparent",
+                  )}
+                  aria-hidden
+                />
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={to}
               to={to}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "relative flex flex-1 flex-col items-center gap-1 py-2.5 text-[11px] text-muted-foreground",
                 active && "text-primary",

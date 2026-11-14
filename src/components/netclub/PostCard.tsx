@@ -184,6 +184,64 @@ export function PostCard({
         <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed">{post.content}</p>
       )}
 
+      {post.category && (
+        <span className="mt-3 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
+          {t(`home.category.${post.category}`)}
+        </span>
+      )}
+
+      {(post.media ?? []).length > 0 && (
+        <div
+          className={cn(
+            "mt-3 grid gap-2 overflow-hidden rounded-xl",
+            (post.media ?? []).length === 1 ? "grid-cols-1" : "grid-cols-2",
+          )}
+        >
+          {(post.media ?? []).map((item) =>
+            item.type === "video" ? (
+              <video
+                key={item.id}
+                src={item.url}
+                controls
+                playsInline
+                preload="metadata"
+                className={cn(
+                  "w-full rounded-lg bg-black",
+                  (post.media ?? []).length === 1
+                    ? "max-h-[480px] object-contain"
+                    : "aspect-square object-cover",
+                )}
+              >
+                {t("home.videoUnsupported")}
+              </video>
+            ) : (
+              <a
+                key={item.id}
+                href={item.url}
+                target="_blank"
+                rel="noreferrer"
+                className={cn(
+                  "block overflow-hidden rounded-lg border",
+                  (post.media ?? []).length === 1 ? "" : "aspect-square",
+                )}
+              >
+                <img
+                  src={item.url}
+                  alt={t("home.mediaAlt")}
+                  loading="lazy"
+                  className={cn(
+                    "w-full",
+                    (post.media ?? []).length === 1
+                      ? "max-h-[480px] object-contain"
+                      : "h-full w-full object-cover",
+                  )}
+                />
+              </a>
+            ),
+          )}
+        </div>
+      )}
+
       <footer className="mt-4 flex items-center gap-2">
         <button
           type="button"

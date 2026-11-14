@@ -74,6 +74,17 @@ export interface Profile {
   createdAt: string;
 }
 
+export type PostCategory =
+  "question" | "experience" | "knowledge" | "project" | "discussion" | "achievement" | "other";
+
+export interface PostMedia {
+  id: string;
+  postId: string;
+  type: "image" | "video";
+  url: string;
+  position: number;
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -82,6 +93,8 @@ export interface Post {
   likedBy: string[];
   savedBy: string[];
   clubId?: string | null;
+  category?: PostCategory | null;
+  media?: PostMedia[];
   sponsored?: boolean;
   hidden?: boolean;
 }

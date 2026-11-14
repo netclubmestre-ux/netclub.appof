@@ -16,6 +16,7 @@ import {
   type MatchState,
   type NetclubRepository,
   type OnboardingInput,
+  type PostMediaInput,
   type ProfileUpdateInput,
   type PromotionInput,
   type ReportInput,
@@ -46,6 +47,7 @@ import {
   type NotificationKind,
   type OfficialAnnouncement,
   type Post,
+  type PostCategory,
   type Profile,
   type Promotion,
   type Recommendation,
@@ -73,9 +75,12 @@ const BUCKETS: Record<UploadKind, string> = {
   avatar: "avatars",
   portfolio: "portfolio",
   story: "stories",
+  post: "posts",
 };
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 25 * 1024 * 1024;
+const VIDEO_TYPES = ["video/mp4", "video/webm"];
 
 function strings<T extends string>(value: unknown): T[] {
   return Array.isArray(value) ? value.filter((item): item is T => typeof item === "string") : [];
@@ -115,6 +120,17 @@ function mapPost(row: Row): Post {
     likedBy: (row.post_likes ?? []).map((like: Row) => like.user_id),
     savedBy: (row.post_saves ?? []).map((save: Row) => save.user_id),
     clubId: row.club_id ?? null,
+    category: (row.category ?? null) as PostCategory | null,
+    media: (row.post_media ?? [])
+      .slice()
+      .sort((a: Row, b: Row) => (a.position ?? 0) - (b.position ?? 0))
+      .map((item: Row) => ({
+        id: item.id,
+        postId: item.post_id,
+        type: item.media_type === "video" ? "video" : "image",
+        url: item.url,
+        position: item.position ?? 0,
+      })),
     sponsored: Boolean(row.sponsored),
     hidden: Boolean(row.hidden),
   };
@@ -418,6 +434,7 @@ function startOfDayIso(): string {
 export class SupabaseRepository implements NetclubRepository {
   readonly source = "supabase" as const;
   readonly isDemo = false;
+  private feedFullSupported = true;
 
   private get client() {
     return getSupabaseClient();
@@ -606,7 +623,28 @@ export class SupabaseRepository implements NetclubRepository {
     if (file.size > MAX_UPLOAD_BYTES) {
       throw new RepositoryError("INVALID", "file_too_large");
     }
+    return this.uploadFile(file, kind);
+  }
 
+  async uploadMedia(file: File, kind: UploadKind): Promise<string> {
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      throw new RepositoryError("INVALID", "invalid_file_type");
+    }
+    if (isVideo && !VIDEO_TYPES.includes(file.type)) {
+      throw new RepositoryError("INVALID", "invalid_video_type");
+    }
+    if (isImage && file.size > MAX_UPLOAD_BYTES) {
+      throw new RepositoryError("INVALID", "file_too_large");
+    }
+    if (isVideo && file.size > MAX_VIDEO_BYTES) {
+      throw new RepositoryError("INVALID", "video_too_large");
+    }
+    return this.uploadFile(file, kind);
+  }
+
+  private async uploadFile(file: File, kind: UploadKind): Promise<string> {
     const me = await this.userId();
     const bucket = BUCKETS[kind];
     const extension =
@@ -614,7 +652,7 @@ export class SupabaseRepository implements NetclubRepository {
         .split(".")
         .pop()
         ?.toLowerCase()
-        .replace(/[^a-z0-9]/g, "") || "jpg";
+        .replace(/[^a-z0-9]/g, "") || (file.type.startsWith("video/") ? "mp4" : "jpg");
     const path = `${me}/${crypto.randomUUID()}.${extension}`;
 
     const { error } = await this.client.storage.from(bucket).upload(path, file, {
@@ -632,27 +670,85 @@ export class SupabaseRepository implements NetclubRepository {
   async getFeed(): Promise<Post[]> {
     const me = await this.userId();
     const blocked = await this.blockedIds(me);
-    const { data, error } = await this.client
-      .from("posts")
-      .select(
-        "id, author_id, content, created_at, club_id, sponsored, hidden, post_likes(user_id), post_saves(user_id)",
-      )
-      .eq("hidden", false)
-      .order("created_at", { ascending: false });
+    const selectFull =
+      "id, author_id, content, created_at, club_id, category, sponsored, hidden, post_likes(user_id), post_saves(user_id), post_media(id, post_id, media_type, url, position)";
+    const selectLegacy =
+      "id, author_id, content, created_at, club_id, sponsored, hidden, post_likes(user_id), post_saves(user_id)";
+
+    let { data, error }: { data: Row[] | null; error: Row | null } = { data: null, error: null };
+    if (this.feedFullSupported) {
+      const res = await this.client
+        .from("posts")
+        .select(selectFull)
+        .eq("hidden", false)
+        .order("created_at", { ascending: false });
+      data = res.data;
+      error = res.error;
+    }
+    // Bancos que ainda não receberam a migração de mídia/categoria continuam
+    // funcionando com o feed de texto em vez de quebrar por completo.
+    if (error || !this.feedFullSupported) {
+      this.feedFullSupported = false;
+      const retry = await this.client
+        .from("posts")
+        .select(selectLegacy)
+        .eq("hidden", false)
+        .order("created_at", { ascending: false });
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) mapPostgrestError(error);
     return (data ?? []).filter((row: Row) => !blocked.has(row.author_id)).map(mapPost);
   }
 
-  async createPost(content: string, clubId?: string | null): Promise<void> {
+  async createPost(
+    content: string,
+    clubId?: string | null,
+    options?: { category?: PostCategory | null; media?: PostMediaInput[] },
+  ): Promise<void> {
     const me = await this.userId();
     const clean = content.trim();
+    const media = options?.media ?? [];
     if (!clean) throw new RepositoryError("INVALID", "empty");
-    const { error } = await this.client.from("posts").insert({
+
+    const payload: Row = {
       author_id: me,
       content: clean,
       club_id: clubId ?? null,
-    });
+    };
+    if (options?.category) payload.category = options.category;
+
+    let { data, error } = await this.client.from("posts").insert(payload).select("id").single();
+
+    // A coluna `category` pode ainda não existir em bancos sem a migração
+    // mais recente. Nesse caso, publica sem categoria em vez de falhar.
+    if (error && (error.code === "PGRST204" || error.code === "42703")) {
+      delete payload.category;
+      const retry = await this.client.from("posts").insert(payload).select("id").single();
+      data = retry.data;
+      error = retry.error;
+    }
     if (error) mapPostgrestError(error);
+    const postId = data?.id as string | undefined;
+    if (!postId) return;
+
+    if (media.length > 0) {
+      const { error: mediaError } = await this.client.from("post_media").insert(
+        media.map((item, index) => ({
+          post_id: postId,
+          media_type: item.type,
+          url: item.url,
+          position: index,
+        })),
+      );
+      if (mediaError) {
+        // Sem a tabela de mídia não é possível publicar anexos de forma íntegra.
+        // Remove a publicação recém-criada para não deixar um post vazio.
+        await this.client.from("posts").delete().eq("id", postId).eq("author_id", me);
+        throw new RepositoryError("INVALID", "media_unavailable");
+      }
+    }
   }
 
   async updatePost(id: string, content: string): Promise<void> {
@@ -931,7 +1027,15 @@ export class SupabaseRepository implements NetclubRepository {
       .maybeSingle();
     if (reverseError) mapPostgrestError(reverseError);
 
-    return { matched: Boolean(reverse) };
+    const matched = Boolean(reverse);
+    if (matched) {
+      // Cria a conexão profissional de forma atômica quando a função existir.
+      // Em bancos sem a migração mais recente o match continua válido pelos
+      // interesses mútuos, pelas notificações e pelo chat.
+      await this.client.rpc("confirm_match", { target: targetId });
+    }
+
+    return { matched };
   }
 
   async passProfile(targetId: string): Promise<void> {
