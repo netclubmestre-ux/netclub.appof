@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BadgeCheck,
@@ -58,6 +58,7 @@ export function ProfileView({
   const { t, formatDate } = useI18n();
   const repository = useRepository();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const isOwn = profile.id === me.id;
   const [tab, setTab] = useState<Tab>("posts");
   const [reporting, setReporting] = useState(false);
@@ -99,9 +100,12 @@ export function ProfileView({
 
   const startChat = useMutation({
     mutationFn: () => repository.startConversation(profile.id),
-    onSuccess: () => {
+    onSuccess: (conversationId) => {
       void queryClient.invalidateQueries({ queryKey: ["conversations"] });
       toast.success(t("chat.start"));
+      if (conversationId) {
+        void navigate({ to: "/chat/$id", params: { id: conversationId } });
+      }
     },
     onError: () => toast.error(t("errors.notConnected")),
   });
